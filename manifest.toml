@@ -1,0 +1,50 @@
+packaging_format = 2
+id = "headscale_gateway"
+name = "Headscale Gateway"
+description.en = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
+description.es = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
+version = "1.4.6~ynh1"
+maintainers = ["gentedelcondado"]
+
+[upstream]
+license = "non-free"
+code = "https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway"
+
+[integration]
+yunohost = ">= 12.1.17"
+helpers_version = "2.1"
+architectures = ["amd64", "arm64"]
+multi_instance = true
+ldap = false
+sso = true
+disk = "300M"
+ram.build = "100M"
+ram.runtime = "256M"
+
+[install.domain]
+type = "domain"
+
+[install.path]
+type = "path"
+default = "/gateway"
+
+[install.init_main_permission]
+type = "group"
+default = "admins"
+
+[resources.system_user]
+
+[resources.install_dir]
+
+[resources.data_dir]
+
+[resources.permissions]
+main.url = "/"
+main.auth_header = true
+
+[resources.ports]
+main.default = 19091
+lan.default = 18443
+
+[resources.apt]
+packages = ["ca-certificates", "python3", "libc-bin"]

@@ -1,0 +1,14 @@
+#!/bin/bash
+# shellcheck disable=SC1091,SC2154,SC2034
+# YunoHost inyecta los ajustes y las funciones auxiliares en el entorno del script.
+source _common.sh
+source /usr/share/yunohost/helpers
+
+if [[ -f "/etc/systemd/system/$app.service" ]]; then
+    ynh_systemctl --service="$app" --action=stop
+fi
+ynh_config_remove_systemd
+yunohost service remove "$app"
+ynh_config_remove_nginx
+rm -f -- "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc"
+# Los recursos YunoHost conservan data_dir salvo que el administrador solicite purgarlo.

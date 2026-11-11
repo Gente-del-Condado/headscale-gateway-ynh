@@ -1,0 +1,32 @@
+[Unit]
+Description=Headscale Gateway (__APP__)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__INSTALL_DIR__
+Environment=GATEWAY_BOOTSTRAP_FILE=__INSTALL_DIR__/startup.json
+ExecStart=__INSTALL_DIR__/headscale-gateway --db __DATA_DIR__/gateway/gateway.sqlite
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+# YunoHost's data_dir lives under /home/yunohost.app. Keep it visible and
+# grant write access only to this app's data_dir below.
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ReadWritePaths=__DATA_DIR__
+
+[Install]
+WantedBy=multi-user.target

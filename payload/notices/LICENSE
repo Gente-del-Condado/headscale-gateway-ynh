@@ -1,0 +1,21 @@
+HEADSCALE GATEWAY — CÓDIGO PROPIETARIO / PROPRIETARY CODE
+
+Copyright (c) 2026 los respectivos titulares del código original de
+Headscale Gateway. Todos los derechos reservados.
+
+No se concede mediante este archivo una licencia pública de uso, copia,
+modificación, distribución, sublicencia o explotación del código original.
+El uso por clientes requiere una autorización o acuerdo comercial separado
+con su titular. La disponibilidad del código fuente no concede por sí sola
+ninguno de esos permisos. Se respetan las excepciones imperativas de la ley.
+
+Este aviso NO se aplica al código, bibliotecas, herramientas o recursos de
+terceros. Esos componentes conservan sus propias licencias y todos los derechos
+que estas otorgan a sus destinatarios. Véanse third_party/ y los avisos incluidos
+en las distribuciones de Electron. Ninguna restricción de este proyecto limita
+los permisos que corresponden a un componente de terceros bajo su licencia.
+
+No public license is granted for the original Headscale Gateway code. Customer
+use requires separate authorization or a commercial agreement with its rights
+holder. Third-party components remain governed by their own licenses; this
+notice does not restrict rights granted by those licenses or mandatory law.

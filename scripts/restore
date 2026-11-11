@@ -1,0 +1,32 @@
+#!/bin/bash
+# shellcheck disable=SC1091,SC2154,SC2034
+# YunoHost inyecta los ajustes y las funciones auxiliares en el entorno del script.
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+hgw_check_sso
+
+ynh_restore "$install_dir"
+previous=""
+if [[ -d "$data_dir/gateway" ]]; then
+    previous="$data_dir/gateway.before-yunohost-restore-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv "$data_dir/gateway" "$previous"
+fi
+if ! tar --extract --file=gateway-data.tar --directory="$data_dir" --no-same-owner; then
+    if [[ -n "$previous" ]]; then
+        rm -rf -- "$data_dir/gateway"
+        mv "$previous" "$data_dir/gateway"
+    fi
+    ynh_die "No se han podido restaurar los datos del Gateway; se conserva el estado anterior"
+fi
+chown -R "$app:$app" "$data_dir"
+chmod 0700 "$data_dir" "$data_dir/gateway"
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc"
+chown root:root "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc"
+chmod 0600 "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc"
+ynh_restore "/etc/systemd/system/$app.service"
+systemctl daemon-reload
+systemctl enable "$app.service" --quiet
+hgw_register_service
+ynh_systemctl --service="$app" --action=start
+ynh_systemctl --service=nginx --action=reload

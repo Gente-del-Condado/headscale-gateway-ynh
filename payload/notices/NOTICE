@@ -1,0 +1,10 @@
+Headscale Gateway incorporates third-party software. The proprietary notice
+for the original project does not replace any third-party license.
+
+See third_party/inventory.json and the accompanying verbatim license/notice
+files. Electron distributions also include LICENSE and LICENSES.chromium.html.
+The inventory distinguishes Go modules linked into supported server/helper
+builds from the wider module graph, and npm build dependencies.
+
+Do not remove notices from customer distributions. No production credentials,
+issuer private keys or customer data belong in a source or binary release.

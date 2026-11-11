@@ -1,0 +1,15 @@
+#!/bin/bash
+# shellcheck disable=SC1091,SC2154,SC2034
+# YunoHost inyecta los ajustes y las funciones auxiliares en el entorno del script.
+source _common.sh
+source /usr/share/yunohost/helpers
+
+ynh_script_progression "Instalando Headscale Gateway..."
+hgw_check_sso
+hgw_install_binary
+hgw_configure
+ynh_config_add_nginx
+ynh_config_add_systemd
+hgw_register_service
+ynh_systemctl --service="$app" --action=start
+ynh_systemctl --service=nginx --action=reload
