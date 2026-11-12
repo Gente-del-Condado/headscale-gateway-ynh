@@ -54,6 +54,11 @@ rama del repositorio.
 
 ## Entrar desde el portal
 
+El paquete incluye el icono cuadrado del proyecto en `doc/logo.png` y lo registra
+como logo de la aplicación en administración y portal. La revisión `1.4.6~ynh2`
+lo incorpora también al actualizar una instalación anterior. Un logo
+personalizado ya configurado se conserva.
+
 Abre **Headscale Gateway** desde el portal de YunoHost con una cuenta del grupo
 real `admins`. Entrarás directamente, sin otra contraseña del Gateway.
 

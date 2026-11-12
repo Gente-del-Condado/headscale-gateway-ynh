@@ -37,3 +37,16 @@ hgw_configure() {
 hgw_register_service() {
     yunohost service add "$app" --description="Gateway HTTPS privado para Headscale" --log="$data_dir/gateway/logs/gateway.log"
 }
+
+hgw_install_logo() {
+    local logo="${1:-../doc/logo.png}" current_logo default_logo
+    current_logo="$(yunohost user permission info "$app.main" --output-as json --quiet |
+        python3 -c 'import json, sys; print(json.load(sys.stdin).get("logo_hash") or "")')"
+    default_logo="$(sha256sum "$logo")"
+    default_logo="${default_logo%% *}"
+    # Conserva un logo personalizado. Registrar de nuevo el logo propio también
+    # repone su PNG en la caché global al restaurar en otro servidor YunoHost.
+    if [[ -z "$current_logo" || "$current_logo" == "$default_logo" ]]; then
+        yunohost user permission update "$app.main" --logo="$logo"
+    fi
+}

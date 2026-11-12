@@ -3,7 +3,7 @@ id = "headscale_gateway"
 name = "Headscale Gateway"
 description.en = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
 description.es = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
-version = "1.4.6~ynh1"
+version = "1.4.6~ynh2"
 maintainers = ["gentedelcondado"]
 
 [upstream]

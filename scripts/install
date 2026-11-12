@@ -6,6 +6,7 @@ source /usr/share/yunohost/helpers
 
 ynh_script_progression "Instalando Headscale Gateway..."
 hgw_check_sso
+hgw_install_logo
 hgw_install_binary
 hgw_configure
 ynh_config_add_nginx

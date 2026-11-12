@@ -4,6 +4,7 @@
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 hgw_check_sso
+hgw_install_logo ../settings/doc/logo.png
 
 ynh_restore "$install_dir"
 previous=""

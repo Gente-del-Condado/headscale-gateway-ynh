@@ -6,6 +6,7 @@ source /usr/share/yunohost/helpers
 
 ynh_script_progression "Actualizando Headscale Gateway..."
 hgw_check_sso
+hgw_install_logo
 ynh_systemctl --service="$app" --action=stop
 hgw_install_binary
 hgw_configure
