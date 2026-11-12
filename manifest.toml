@@ -3,11 +3,11 @@ id = "headscale_gateway"
 name = "Headscale Gateway"
 description.en = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
 description.es = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
-version = "1.4.6~ynh2"
+version = "1.4.6~ynh3"
 maintainers = ["gentedelcondado"]
 
 [upstream]
-license = "non-free"
+license = "AGPL-3.0-only"
 code = "https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway"
 
 [integration]

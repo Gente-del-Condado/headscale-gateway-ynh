@@ -195,3 +195,11 @@ sudo journalctl -u headscale_gateway -n 80 --no-pager
 
 Sustituye el nombre por el identificador real si hay varias instancias.
 Comparte solo el fragmento relevante del error, revisado para excluir secretos.
+
+## Licencia y fuentes
+
+El código propio es software libre bajo **AGPL-3.0-only**. La revisión
+`1.4.6~ynh3` incorpora esta licencia y las fuentes del motor en
+`payload/source.tar.gz`, con `SOURCE.md` e instrucciones de compilación.
+`build-manifest.json` registra las sumas de cada archivo. Las licencias de
+terceros se conservan en `payload/notices/`; no cambian con esta publicación.
