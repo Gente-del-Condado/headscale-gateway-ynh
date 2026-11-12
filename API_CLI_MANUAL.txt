@@ -58,5 +58,5 @@ GET /api/v1/status añade subscription: enabled, state, allowed y, cuando proced
 instance_id, expires_at y grace_until (segundos Unix UTC). La compilación normal
 lo devuelve desactivado. La activación/renovación se realiza con un archivo firmado
 subscription.license en data_dir, no con un token Bearer ni una clave Headscale.
-El comando de emisión src/tools/license-admin pertenece al propietario; no forma parte
+El comando de emisión src/tools/license-admin es una herramienta separada; no forma parte
 del CLI del Gateway ni representa un proveedor de cobro. Véase SUSCRIPCIONES.md.

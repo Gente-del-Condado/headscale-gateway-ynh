@@ -20,7 +20,7 @@ API / CLI: docs/API_CLI_MANUAL.txt.
 Recuperar acceso: docs/RECUPERAR_ACCESO.md. El código se muestra solo en una
 terminal interactiva; no está en journalctl ni en los archivos de registro.
 
-Código propio propietario: LICENSE. Dependencias: NOTICE y third_party/.
+Código propio AGPL-3.0-only: LICENSE y NOTICE. Dependencias: NOTICE y third_party/.
 El módulo de suscripción está desactivado en esta distribución normal.
 Para compilarlo activado: docs/SUSCRIPCIONES.md. Antes de vender la mini GUI,
 revisar las tareas de cumplimiento pendientes en docs/LICENCIAS.md.

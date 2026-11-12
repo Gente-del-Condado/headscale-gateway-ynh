@@ -141,7 +141,7 @@
 .\build.ps1 --commercial-public-key &quot;$env:LOCALAPPDATA\HGW-Issuer\issuer.pub&quot;
 </code></pre>
 <p>El compilador exige una clave pública de 32 bytes y no acepta una clave privada como parámetro. El emisor genera <code>issuer.key</code> (privada) e <code>issuer.pub</code> (pública). Restringe los permisos NTFS del directorio privado en Windows; los permisos Unix no equivalen a ACL NTFS.</p>
-<p>Para desactivar completamente la restricción, recompila con <code>./build.sh</code> o <code>.\build.ps1</code> <strong>sin</strong> <code>--commercial-public-key</code>. No distribuyas esas compilaciones sin restricción a clientes a los que quieras exigir activación.</p>
+<p>Para desactivar completamente la restricción, recompila con <code>./build.sh</code> o <code>.\build.ps1</code> <strong>sin</strong> <code>--commercial-public-key</code>. Los destinatarios mantienen su derecho a modificar y recompilar el programa bajo AGPL-3.0; la activación no restringe esos derechos.</p>
 <h2 id="activación-manual-de-una-instalación">Activación manual de una instalación</h2>
 <ol>
 <li>Ejecuta la compilación comercial. Abre administración local y consulta el resumen: genera <code>license-instance.id</code> dentro del directorio de datos. También puedes leer ese archivo; no es una clave secreta. No cambies esa identidad mientras la licencia esté vigente.</li>
@@ -181,7 +181,7 @@
 <p>Referencia de ejemplo para un adaptador futuro: <a href="https://docs.stripe.com/billing/subscriptions/webhooks">eventos de suscripciones Stripe</a>. No es una dependencia de esta implementación.</p>
 <h2 id="límites-que-debes-conocer-antes-de-vender">Límites que debes conocer antes de vender</h2>
 <p>Esta activación no es DRM invulnerable. Quien controla el equipo puede modificar el binario, clonar el directorio de instalación o alterar el reloj. No hay revocación inmediata offline: un documento firmado sigue siendo válido hasta su vencimiento/gracia. Usa concesiones cortas y un servicio de renovación autenticado si necesitas revocación y control de plazas. La rotación de clave pública requiere nuevas compilaciones en esta primera versión.</p>
-<p>El código fuente debe conservarse en un repositorio <strong>privado</strong> si tu objetivo es controlar su acceso. No publiques la clave privada ni los paquetes de fuente de propietario como releases para clientes. La protección jurídica del código propio no elimina los derechos que conceden las dependencias. Antes de comercializar, revisa <code>LICENCIAS.md</code> y completa el contrato de cliente, soporte, privacidad y condiciones de suscripción con asesoramiento jurídico adecuado.</p></article>
+<p>El módulo opcional se distribuye bajo la misma AGPL-3.0-only que el código propio del proyecto. Cobrar por soporte, alojamiento o suscripciones no retira a los usuarios sus derechos a estudiar, modificar y redistribuir el programa. Deben facilitarse los fuentes correspondientes cuando lo exige la licencia. Nunca publiques la clave privada del emisor, credenciales o datos de clientes. Consulta <code>LICENCIAS.md</code> para distinguir la licencia del software de las condiciones del servicio.</p></article>
       <footer class="page-footer">
         <p>Headscale Gateway · Documentación en español</p>
         <a href="MANUAL_WEB.html">Cómo editar este manual</a>

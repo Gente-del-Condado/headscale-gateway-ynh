@@ -125,14 +125,42 @@
     </aside>
     <main id="contenido" tabindex="-1">
       <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Licencias</p>
-      <article class="prose"><h1 id="licencias-de-dependencias-y-distribución-comercial">Licencias de dependencias y distribución comercial</h1>
-<p>Revisión técnica: 25 de octubre de 2026. Esta revisión identifica los materiales presentes; no sustituye el análisis jurídico de tu contrato comercial ni certifica que cualquier forma de redistribución sea válida.</p>
-<h2 id="código-propio-y-repositorio">Código propio y repositorio</h2>
-<p><code>LICENSE</code> reserva los derechos del código original del proyecto y exige autorización comercial separada para clientes. No se ha elegido MIT ni Apache para tu código. Mantén el repositorio <strong>privado</strong> en GitHub/Forgejo si quieres controlar quién recibe los fuentes. Una licencia restrictiva no impide técnicamente que alguien copie lo que publicas ni permite retirar permisos ya concedidos sobre código de terceros.</p>
-<p>El titular debe comprobar que tiene los derechos de los aportes incorporados al proyecto. La revisión técnica de archivos no demuestra la titularidad histórica. El contrato de venta/suscripción y la identificación legal del vendedor todavía deben formalizarse antes de vender a terceros.</p>
+      <article class="prose"><h1 id="licencia-y-avisos-de-terceros">Licencia y avisos de terceros</h1>
+<p>Revisión técnica: 12 de noviembre de 2026. Se han contrastado los avisos locales,
+los metadatos y la distribución de fuentes del motor. Esta revisión no acredita
+la titularidad histórica de las aportaciones ni sustituye la revisión de las
+obligaciones de cada componente distribuido.</p>
+<h2 id="código-propio">Código propio</h2>
+<p>Headscale Gateway se publica bajo <strong>GNU Affero General Public License, versión
+3 únicamente</strong> (<code>AGPL-3.0-only</code>). El alcance está definido en <code>NOTICE</code>: código,
+scripts, documentación y recursos originales, salvo materiales identificados
+con otra licencia o procedencia. Descarga el <a href="LICENSE.txt">texto completo</a> y
+los <a href="NOTICE.txt">avisos del proyecto</a>.</p>
+<p>Se permite utilizar, estudiar, modificar y redistribuir el código, incluso con
+fines comerciales, cumpliendo AGPL-3.0. No se exige una autorización comercial
+separada para ejercer esos derechos. Las versiones modificadas ofrecidas por
+red deben ofrecer sus fuentes correspondientes a los usuarios conforme a la
+sección 13. Conservar una copia privada para desarrollo no exime de las
+obligaciones al distribuir o prestar el programa modificado por red.</p>
+<p>La elección se aplica a esta publicación y las posteriores que la conserven;
+no se reescriben las etiquetas ni los avisos de las entregas históricas. Los
+componentes de terceros mantienen sus licencias. El titular debe tener derecho
+a licenciar las aportaciones originales incorporadas.</p>
+<h2 id="fuentes-públicas-del-motor">Fuentes públicas del motor</h2>
+<p>El <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh">paquete público YunoHost</a>
+incluye <code>payload/source.tar.gz</code>, con las mismas fuentes de compilación que
+<code>source.tar.gz</code> del complemento Home Assistant. Ambos incluyen <code>LICENSE</code>,
+<code>NOTICE</code>, <code>VERSION</code>, <code>go.mod</code>, <code>go.sum</code> y <code>SOURCE.md</code>, con las órdenes Go para
+compilar sin descargar módulos usando el <code>vendor/</code> incluido. Las sumas de los archivos se registran en <code>build-manifest.json</code>; el
+publicador rechaza fuentes que no coincidan. Los avisos de las dependencias
+acompañan al paquete en <code>notices/third_party/</code>.</p>
+<p>Conserva el archivo de fuentes correspondiente a cada binario redistribuido.
+Una rama <code>main</code> o un enlace al código más reciente no sustituye los fuentes de
+una entrega anterior. Los archivos privados de estado, identidades VPN y claves
+no forman parte de las fuentes del programa ni se publican.</p>
 <h2 id="inventario-reproducible">Inventario reproducible</h2>
 <p><code>src/third_party/inventory.json</code> contiene los módulos de Go y paquetes npm encontrados. <code>tools/audit_licenses.py</code> cruza los módulos con las importaciones realmente enlazadas en servidor/helper para Linux, Windows y macOS, amd64 y arm64. Copia los textos de licencia y avisos sin modificarlos, incluyendo avisos anidados y el runtime Go.</p>
-<p>Resultado de esta revisión: <strong>734 módulos en el grafo Go; 78 módulos enlazados por el servidor/helper en alguna plataforma; 51 registros npm encontrados</strong>. Los módulos del grafo no equivalen a código distribuido: hay dependencias de pruebas y herramientas. Las etiquetas <code>license_hints</code> son búsquedas heurísticas, no una declaración SPDX definitiva. <code>REVIEW</code> puede proceder de un archivo NOTICE o PATENTS que acompaña una licencia reconocida.</p>
+<p>Resultado de esta revisión: <strong>737 módulos en el grafo Go; 78 módulos enlazados por el servidor/helper en alguna plataforma; 52 registros npm encontrados</strong>. Los módulos del grafo no equivalen a código distribuido: hay dependencias de pruebas y herramientas. Las etiquetas <code>license_hints</code> son búsquedas heurísticas, no una declaración SPDX definitiva. <code>REVIEW</code> puede proceder de un archivo NOTICE o PATENTS que acompaña una licencia reconocida.</p>
 <p>Componentes principales revisados:</p>
 <table>
 <thead>
@@ -176,9 +204,9 @@
 </tbody>
 </table>
 <p>La referencia a GPL detectada en <code>modernc.org/sqlite/LICENSE-3RD-PARTY.md</code> está en el texto de licencias secundarias de MPL incluido en su inventario transitivo; <strong>no demuestra que el controlador SQLite enlazado sea GPL</strong>. Ese mismo documento distingue expresamente componentes enlazados, solo pruebas y materiales fuera de compilación. Las coincidencias en avisos agregados deben revisarse en contexto.</p>
-<h2 id="punto-pendiente-antes-de-comercializar-la-mini-gui">Punto pendiente antes de comercializar la mini GUI</h2>
-<p><code>LICENSES.chromium.html</code> incluye componentes bajo MPL y LGPL, incluido FFmpeg. No es correcto afirmar que toda la mini GUI está únicamente bajo MIT. Los permisos comerciales y las obligaciones de esos componentes deben respetarse también si tu aplicación es propietaria.</p>
-<p>Esta entrega conserva los avisos originales y no modifica Electron/FFmpeg, pero <strong>no incluye un archivo completo de los fuentes correspondientes de todos los componentes copyleft del runtime</strong> ni una oferta comercial de fuentes. Antes de redistribuir a clientes hay que cerrar ese cumplimiento: identificar las compilaciones concretas, disponer de los fuentes y modificaciones pertinentes, cumplir los mecanismos de sustitución/revinculación cuando apliquen y no imponer restricciones contractuales contrarias a sus licencias. No se considera resuelto simplemente por incluir este README.</p>
+<h2 id="pendiente-de-distribución-del-runtime-de-escritorio">Pendiente de distribución del runtime de escritorio</h2>
+<p><code>LICENSES.chromium.html</code> incluye componentes bajo MPL y LGPL, incluido FFmpeg. No es correcto afirmar que toda la mini GUI está únicamente bajo MIT. Los permisos comerciales y las obligaciones de esos componentes deben respetarse también al distribuir el proyecto bajo AGPL-3.0.</p>
+<p>Esta entrega conserva los avisos originales y no modifica Electron/FFmpeg, pero <strong>no incluye un archivo completo de los fuentes correspondientes de todos los componentes copyleft del runtime</strong> ni una oferta de fuentes correspondiente. Antes de redistribuir el runtime de escritorio hay que cerrar ese cumplimiento: identificar las compilaciones concretas, disponer de los fuentes y modificaciones pertinentes, cumplir los mecanismos de sustitución/revinculación cuando apliquen y no imponer restricciones contractuales contrarias a sus licencias. No se considera resuelto simplemente por incluir este README.</p>
 <p>No se ha detectado una licencia principal GPL/AGPL en los 78 módulos enlazados del servidor/helper al revisar sus textos principales; esto no elimina la necesidad de conservar y revisar los avisos incorporados. El inventario no es una auditoría de patentes, marcas, vulnerabilidades ni procedencia de cada línea.</p>
 <h2 id="fuentes-consultadas">Fuentes consultadas</h2>
 <ul>
@@ -193,7 +221,7 @@
 (cd src/desktop &amp;&amp; npm ci)
 python3 tools/audit_licenses.py
 </code></pre>
-<p>Después de actualizar dependencias, repite el inventario y revisa los cambios antes de vender otra versión. Los paquetes de servidor y GUI llevan los avisos de terceros. Las claves privadas del emisor y las licencias de clientes se excluyen de los paquetes de fuentes.</p></article>
+<p>Después de actualizar dependencias, repite el inventario y revisa los cambios antes de publicar otra versión. Los paquetes de servidor y GUI llevan los avisos de terceros. Las claves privadas del emisor y las licencias de clientes se excluyen de los paquetes de fuentes.</p></article>
       <footer class="page-footer">
         <p>Headscale Gateway · Documentación en español</p>
         <a href="MANUAL_WEB.html">Cómo editar este manual</a>
@@ -202,11 +230,13 @@ python3 tools/audit_licenses.py
     <aside class="page-toc">
       <nav aria-label="En esta página"><p>En esta página</p><ul>
         
-          <li><a href="#código-propio-y-repositorio">Código propio y repositorio</a></li>
+          <li><a href="#código-propio">Código propio</a></li>
+        
+          <li><a href="#fuentes-públicas-del-motor">Fuentes públicas del motor</a></li>
         
           <li><a href="#inventario-reproducible">Inventario reproducible</a></li>
         
-          <li><a href="#punto-pendiente-antes-de-comercializar-la-mini-gui">Punto pendiente antes de comercializar la mini GUI</a></li>
+          <li><a href="#pendiente-de-distribución-del-runtime-de-escritorio">Pendiente de distribución del runtime de escritorio</a></li>
         
           <li><a href="#fuentes-consultadas">Fuentes consultadas</a></li>
         

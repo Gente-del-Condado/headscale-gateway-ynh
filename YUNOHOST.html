@@ -292,7 +292,13 @@ Se conservan la licencia del proyecto y los avisos legales originales de tercero
 sudo journalctl -u headscale_gateway -n 80 --no-pager
 </code></pre>
 <p>Sustituye el nombre por el identificador real si hay varias instancias.
-Comparte solo el fragmento relevante del error, revisado para excluir secretos.</p></article>
+Comparte solo el fragmento relevante del error, revisado para excluir secretos.</p>
+<h2 id="licencia-y-fuentes">Licencia y fuentes</h2>
+<p>El código propio es software libre bajo <strong>AGPL-3.0-only</strong>. La revisión
+<code>1.4.6~ynh3</code> incorpora esta licencia y las fuentes del motor en
+<code>payload/source.tar.gz</code>, con <code>SOURCE.md</code> e instrucciones de compilación.
+<code>build-manifest.json</code> registra las sumas de cada archivo. Las licencias de
+terceros se conservan en <code>payload/notices/</code>; no cambian con esta publicación.</p></article>
       <footer class="page-footer">
         <p>Headscale Gateway · Documentación en español</p>
         <a href="MANUAL_WEB.html">Cómo editar este manual</a>
@@ -324,6 +330,8 @@ Comparte solo el fragmento relevante del error, revisado para excluir secretos.<
           <li><a href="#estado-de-validación">Estado de validación</a></li>
         
           <li><a href="#diagnóstico-rápido">Diagnóstico rápido</a></li>
+        
+          <li><a href="#licencia-y-fuentes">Licencia y fuentes</a></li>
         
       </ul></nav>
     </aside>
