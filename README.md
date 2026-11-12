@@ -18,12 +18,12 @@ Las actualizaciones deben conservar la carpeta de datos de cada instancia.
 
 ## Instalar desde el repositorio público
 
-El [repositorio del paquete](https://github.com/Gente-del-Condado/headscale-gateway-ynh)
+El [repositorio del paquete](https://github.com/Gente-del-Condado/headscale-gateway_ynh)
 contiene el manifiesto en la raíz y los binarios para ambas arquitecturas.
 No necesitas acceso al repositorio privado del motor:
 
 ```bash
-sudo yunohost app install https://github.com/Gente-del-Condado/headscale-gateway-ynh
+sudo yunohost app install https://github.com/Gente-del-Condado/headscale-gateway_ynh
 ```
 
 Es una instalación desde una URL personalizada, no una incorporación al catálogo
@@ -95,7 +95,7 @@ publicado sea accesible por VPN: comprueba ambos recorridos.
 Si instalaste desde el repositorio público:
 
 ```bash
-sudo yunohost app upgrade headscale_gateway --url https://github.com/Gente-del-Condado/headscale-gateway-ynh
+sudo yunohost app upgrade headscale_gateway --url https://github.com/Gente-del-Condado/headscale-gateway_ynh
 ```
 
 Si utilizas el clon privado de desarrollo:
