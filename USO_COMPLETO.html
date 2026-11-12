@@ -568,7 +568,7 @@ variables → Actions</strong> de GitHub. El flujo publica por SSH en el catálo
 Forgejo, cuya réplica actualiza después Mis-app en GitHub.</p>
 <h2 id="publicar-el-paquete-yunohost">Publicar el paquete YunoHost</h2>
 <p>El repositorio público de instalación es
-<a href="https://github.com/Gente-del-Condado/headscale-gateway-ynh">headscale-gateway-ynh</a>.
+<a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh">headscale-gateway_ynh</a>.
 Consulta la <a href="YUNOHOST.html">guía de YunoHost</a> para instalarlo y
 actualizarlo mediante su URL. El paquete sigue siendo experimental hasta
 completar la aceptación en una máquina virtual real; publicarlo no lo incorpora
@@ -581,9 +581,9 @@ al catálogo oficial de YunoHost.</p>
 <li>El flujo <strong>Publicar el paquete YunoHost</strong> audita Go y npm con las mismas
    comprobaciones anteriores y valida <code>git-install-manifest.json</code>. Solo entonces
    obtiene la clave y publica por SSH en
-   <code>wolfbelmi88/headscale-gateway-ynh</code> de Forgejo.</li>
+   <code>wolfbelmi88/headscale-gateway_ynh</code> de Forgejo.</li>
 <li>El espejo de salida de ese repositorio actualiza el repositorio público
-   <code>Gente-del-Condado/headscale-gateway-ynh</code> de GitHub.</li>
+   <code>Gente-del-Condado/headscale-gateway_ynh</code> de GitHub.</li>
 </ol>
 <p>El flujo se activa al cambiar <code>yunohost/</code>, las dependencias auditadas o el propio
 publicador en <code>main</code>. Usa el último <code>main</code>, serializa las publicaciones y no
@@ -596,11 +596,11 @@ administrados. Rechaza enlaces y rutas ajenas al paquete. Conserva los archivos
 ajenos del destino, las licencias y los avisos; no copia el historial privado,
 <code>src/</code>, el complemento Home Assistant ni los datos de instalaciones.</p>
 <p>Para configurar las credenciales, registra una clave de despliegue dedicada
-con escritura solo en <strong>headscale-gateway-ynh de Forgejo</strong> y guarda su parte
+con escritura solo en <strong>headscale-gateway_ynh de Forgejo</strong> y guarda su parte
 privada como secreto <code>YNH_FORGEJO_DEPLOY_KEY</code> en <strong>headscale-gateway → Settings →
 Secrets and variables → Actions</strong> de GitHub. Configura en el repositorio de
 paquete de Forgejo un espejo SSH hacia
-<code>git@github.com:Gente-del-Condado/headscale-gateway-ynh.git</code>, sincronización al
+<code>git@github.com:Gente-del-Condado/headscale-gateway_ynh.git</code>, sincronización al
 recibir commits e intervalo de respaldo. Registra la clave pública de ese espejo
 como clave de despliegue con escritura exclusivamente en el paquete de GitHub.
 Son dos claves distintas; ninguna necesita escritura en el proyecto principal.</p>
