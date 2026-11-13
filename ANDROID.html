@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.6</span><a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -55,6 +55,10 @@
               
                 <li><a href="ANDROID_USO.html" >Android</a></li>
               
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
                 <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
               
                 <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
@@ -84,6 +88,12 @@
                 <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
               
                 <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
               
                 <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
               
@@ -128,7 +138,13 @@
     <main id="contenido" tabindex="-1">
       <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Android por dentro</p>
       <article class="prose"><h1 id="headscale-gateway-para-android-arquitectura-interfaz-y-validación">Headscale Gateway para Android: arquitectura, interfaz y validación</h1>
-<p>Revisión del 5 de noviembre de 2026. Objetivo confirmado: ejecutar el Gateway
+<p>Estado de publicación: 1.4.7. Las pruebas del 4 y 5 de noviembre que siguen
+son antecedentes y no sustituyen la aceptación de cada nueva compilación.</p>
+<p>La entrega 1.4.7 comparte el motor Go, apunta a API 36 y prepara APK firmado,
+APK sin firma para F-Droid y AAB para Play. La clave estable queda fuera de Git.
+Consulta <a href="ANDROID_CANALES.html">los canales</a> y la
+<a href="PRIVACIDAD_ANDROID.html">privacidad</a>.</p>
+<p>Revisión histórica del 5 de noviembre de 2026. Objetivo confirmado: ejecutar el Gateway
 completo en Android, con su propia conexión a Headscale y publicación de
 servicios. No se limita a administrar un servidor remoto.</p>
 <h2 id="implementación-y-pruebas">Implementación y pruebas</h2>
@@ -171,7 +187,7 @@ sigue consultando a ese proveedor y falla para nombres privados. Ese ajuste
 se conserva; la aplicación avisa y ofrece abrir los ajustes DNS. No se cuenta
 la resolución del sistema con DNS privado estricto como prueba superada.</p>
 <p>Instrucciones: <a href="ANDROID_USO.html">compilación, instalación y uso</a>.
-Laboratorio reproducible: <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/android/PRUEBAS.md">pruebas Android</a>.</p>
+Laboratorio reproducible: <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/android/PRUEBAS.md">pruebas Android</a>.</p>
 <h2 id="interfaz-móvil-android2">Interfaz móvil (android.2)</h2>
 <p>Se reemplaza la columna de controles de la primera APK por Inicio, Panel y
 Ayuda. El panel dispone del espacio central completo; su menú Secciones se
@@ -281,7 +297,7 @@ ciclo de vida del ejecutable, la enumeración de red y su adaptación VPN.
 No se modifica ese proyecto ni se ejecuta su <code>tailscaled</code> junto al Gateway.
 Se reutiliza su copia de <code>hev-socks5-tunnel</code> con las dependencias y licencias
 originales; el contenedor Android y el JNI son propios de este proyecto.
-Consulta <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/android/TERCEROS.md">procedencia y licencias</a>.</p>
+Consulta <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/android/TERCEROS.md">procedencia y licencias</a>.</p>
 <h2 id="validación-pendiente">Validación pendiente</h2>
 <p>La APK es experimental. El modo «VPN siempre activa» queda desactivado en el
 manifiesto porque el túnel necesita iniciar primero el Gateway. Aún requieren pruebas un teléfono arm64 físico,

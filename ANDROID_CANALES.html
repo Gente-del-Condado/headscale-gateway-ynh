@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manual de instalación, administración y desarrollo de Headscale Gateway.">
+  <title>Canales Android · Headscale Gateway</title>
+  <link rel="stylesheet" href="assets/manual.css">
+  <script src="assets/search-data.js" defer></script>
+  <script src="assets/manual.js" defer></script>
+</head>
+<body data-base=".">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <details id="manual-menu" open>
+        <summary>Índice del manual</summary>
+        <search>
+          <label for="manual-search">Buscar en el manual</label>
+          <input id="manual-search" type="search" placeholder="Copias, DNS, instalación…" aria-controls="search-results">
+          <p id="search-status" role="status"></p>
+          <ul id="search-results" hidden></ul>
+        </search>
+        <nav aria-label="Temas del manual">
+          
+            
+              <a class="nav-home" href="index.html" >Inicio</a>
+            
+          
+            
+              <p class="nav-group">Empezar</p>
+              <ul>
+                <li><a href="PRIMEROS_PASOS.html" >Primeros pasos</a></li>
+              
+                <li><a href="USO_COMPLETO.html" >Manual de uso</a></li>
+              
+                <li><a href="EJEMPLOS.html" >Ejemplos completos</a></li>
+              
+                <li><a href="CAPTURAS.html" >Capturas del panel</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Instalar</p>
+              <ul>
+                <li><a href="HOME_ASSISTANT.html" >Home Assistant</a></li>
+              
+                <li><a href="INTEGRACION_HA.html" >Entidades en Home Assistant</a></li>
+              
+                <li><a href="YUNOHOST.html" >YunoHost</a></li>
+              
+                <li><a href="ANDROID_USO.html" >Android</a></li>
+              
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" aria-current="page">Canales Android</a></li>
+              
+                <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
+              
+                <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Administrar</p>
+              <ul>
+                <li><a href="RED_Y_CA_LAN.html" >Red, puertos y CA</a></li>
+              
+                <li><a href="CA-FEDERACION.html" >Confianza y federación</a></li>
+              
+                <li><a href="RECUPERAR_ACCESO.html" >Recuperar el acceso</a></li>
+              
+                <li><a href="SOLUCION_PROBLEMAS.html" >Resolver problemas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Desarrollar</p>
+              <ul>
+                <li><a href="ESTRUCTURA.html" >Estructura del proyecto</a></li>
+              
+                <li><a href="ARQUITECTURA.html" >Arquitectura y flujos</a></li>
+              
+                <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
+              
+                <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
+              
+                <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
+              
+                <li><a href="MIGRACION_REPOSITORIO.html" >Git y entregas</a></li>
+              
+                <li><a href="PRUEBAS.html" >Pruebas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Referencia</p>
+              <ul>
+                <li><a href="MODELOS_API.html" >Modelos de la API</a></li>
+              
+                <li><a href="API_CLI.html" >Guía API y CLI</a></li>
+              
+                <li><a href="PORTAL_Y_FEDERACION.html" >Portal y federación</a></li>
+              
+                <li><a href="HELPER_CA.html" >Helper de certificados</a></li>
+              
+                <li><a href="IDIOMAS_Y_REGISTROS.html" >Idiomas y registros</a></li>
+              
+                <li><a href="ANDROID.html" >Android por dentro</a></li>
+              
+                <li><a href="FEDERACION_WINDOWS.html" >Prueba entre Windows y Linux</a></li>
+              
+                <li><a href="LEEME_BINARIOS.html" >Paquetes de ejecutables</a></li>
+              
+                <li><a href="VERIFICACION_FINAL.html" >Validación y límites</a></li>
+              
+                <li><a href="LICENCIAS.html" >Licencias</a></li>
+              
+                <li><a href="ESCRITORIO_LICENCIAS.html" >Fuentes del escritorio</a></li>
+              
+                <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
+              </ul>
+            
+          
+        </nav>
+      </details>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Canales Android</p>
+      <article class="prose"><h1 id="canales-de-android">Canales de Android</h1>
+<p>La fuente de todas las variantes es <code>android/</code> más el motor Go de <code>src/</code>.
+La versión se toma de <code>VERSION</code>; no hay un motor distinto para cada tienda.</p>
+<table>
+<thead>
+<tr>
+<th scope="col">Canal</th>
+<th scope="col">Salida</th>
+<th scope="col">Firma</th>
+<th scope="col">Publicación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Descarga directa</td>
+<td>APK release</td>
+<td>Clave estable del titular</td>
+<td>Release del proyecto</td>
+</tr>
+<tr>
+<td>F-Droid</td>
+<td>APK release sin firmar</td>
+<td>La asigna F-Droid</td>
+<td>Receta y revisión independientes</td>
+</tr>
+<tr>
+<td>Google Play</td>
+<td>AAB release</td>
+<td>Clave de subida estable</td>
+<td>Solo preparado; requiere consola y revisión</td>
+</tr>
+</tbody>
+</table>
+<p>Consulta <a href="ANDROID_USO.html">compilación y uso</a>,
+<a href="PRIVACIDAD_ANDROID.html">privacidad</a>, la
+<a href="ANDROID_FDROID.html">preparación de F-Droid</a> y la
+<a href="ANDROID_PLAY.html">preparación de Play</a>.</p>
+<p>La firma debe conservarse fuera del repositorio y respaldarse de forma segura.
+Cambiar de firma o de tienda puede requerir exportar, desinstalar e importar.
+Una compilación correcta no sustituye las pruebas en teléfonos físicos.</p></article>
+      <footer class="page-footer">
+        <p>Headscale Gateway · Documentación en español</p>
+        <a href="MANUAL_WEB.html">Cómo editar este manual</a>
+      </footer>
+    </main>
+    <aside class="page-toc">
+      <nav aria-label="En esta página"><p>En esta página</p><ul>
+        
+      </ul></nav>
+    </aside>
+  </div>
+</body>
+</html>

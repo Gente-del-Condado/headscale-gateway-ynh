@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.6</span><a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -55,6 +55,10 @@
               
                 <li><a href="ANDROID_USO.html" >Android</a></li>
               
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
                 <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
               
                 <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
@@ -84,6 +88,12 @@
                 <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
               
                 <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
               
                 <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
               
@@ -443,12 +453,18 @@ sesión administradora; puedes activar <strong>Mostrar en la barra lateral</stro
 <p>La mini GUI es un cliente separado. En Linux ejecuta el lanzador de la distribución <code>Gateway-Tray</code>; en Windows ejecuta <code>Gateway-Tray.exe</code>. Conserva toda la carpeta de recursos.</p>
 <ol>
 <li>Crea un token del Gateway con rol <strong>viewer</strong> y ámbitos <strong>read</strong> y <strong>network</strong>. El inventario Headscale y esos ámbitos Bearer deben estar habilitados.</li>
-<li>Conecta a <code>http://127.0.0.1:9091</code> para el servidor local o a su origen HTTPS administrativo para uno remoto.</li>
+<li>Conecta a <code>http://127.0.0.1:9091</code> para el servidor local o a su dirección base HTTPS administrativa para uno remoto. Una instalación con subruta puede usar <code>https://gateway.example.net/gateway</code>, sin añadir <code>/admin/</code> ni <code>/api/v1/</code>.</li>
 <li>Introduce el token del Gateway, no la clave de Headscale ni la del DNS.</li>
 <li>Decide si quieres recordar el token y activar notificaciones.</li>
 <li>Usa <strong>Probar aviso</strong> para comprobar la integración con el escritorio.</li>
 </ol>
 <p>Cerrar con la X deja la aplicación en la bandeja. <strong>Salir</strong> termina la aplicación. <strong>Desconectar y olvidar token</strong> retira la credencial guardada. El almacenamiento persistente depende del almacén seguro del sistema; si no está disponible, utiliza el token solo en memoria.</p>
+<p>La API debe aceptar directamente el token Bearer. Una sesión del portal SSO de
+YunoHost no se transfiere al cliente de bandeja: si el portal intercepta la ruta,
+utiliza el panel web o una dirección administrativa accesible mediante la VPN.
+No desactives SSO para resolverlo. El cliente rechaza redirecciones, HTTP remoto
+y direcciones con credenciales, consulta o fragmento; limita las respuestas a
+4 MiB y cada petición a diez segundos.</p>
 <p>Notifica solicitudes de rutas, caída y recuperación sin repetir continuamente el mismo evento. Silenciar no detiene la consulta de estado. Las aprobaciones se hacen en el panel administrativo. No hay arranque automático del sistema configurado por defecto.</p>
 <h2 id="api-y-cli">API y CLI</h2>
 <h3 id="documentación-integrada">Documentación integrada</h3>
@@ -686,13 +702,13 @@ de ejecución y las credenciales.</p>
 <h2 id="límites-y-licencia">Límites y licencia</h2>
 <p>No se implementa administración remota automática por confiar una CA, descubrimiento irrestricto de toda la zona DNS, instalación remota de CA en clientes, CRL/OCSP de certificados emitidos ni restauración automática de la configuración completa del VPS Headscale. Los límites de tamaño, puertos y caducidad del catálogo están en la guía de federación.</p>
 <p>Las pruebas del helper privilegiado y el recorrido con un segundo Gateway real siguen siendo comprobaciones separadas. Una compilación correcta para Windows/macOS no equivale a ejecutar allí esta revisión.</p>
-<p><strong>Código propio bajo AGPL-3.0-only</strong>, según <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/LICENSE">LICENSE</a> y <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/NOTICE">NOTICE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. Los paquetes de escritorio incorporan los fuentes y avisos del runtime descritos en <a href="LICENCIAS.html">LICENCIAS.md</a>; conserva la carpeta <code>legal/</code> al redistribuirlos.</p>
+<p><strong>Código propio bajo AGPL-3.0-only</strong>, según <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/LICENSE">LICENSE</a> y <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/NOTICE">NOTICE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. Los paquetes de escritorio incorporan los fuentes y avisos del runtime descritos en <a href="LICENCIAS.html">LICENCIAS.md</a>; conserva la carpeta <code>legal/</code> al redistribuirlos.</p>
 <p>Documentación complementaria: <a href="ARQUITECTURA.html">arquitectura</a>, <a href="PRUEBAS.html">pruebas</a>, <a href="CA-FEDERACION.html">CA y federación</a>, <a href="PORTAL_Y_FEDERACION.html">portal</a>, <a href="HELPER_CA.html">helper</a> e <a href="IDIOMAS_Y_REGISTROS.html">idiomas</a>.</p>
 <h2 id="estructura-y-entregas">Estructura y entregas</h2>
 <p>El mapa vigente está en <a href="ESTRUCTURA.html">ESTRUCTURA.md</a>. El motor, el panel y
 el cliente de escritorio están en <code>src/</code>; Android en <code>android/src/</code>.
 Los comandos de desarrollo y compilación se explican en el
-<a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/README.md">README del repositorio</a>.
+<a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/README.md">README del repositorio</a>.
 Las entregas se generan en carpetas nuevas de <code>releases/</code>. Los paquetes listos
 para instalación privada se conservan en <code>addons/</code> y <code>yunohost/</code>.
 No se incluyen bases de datos, credenciales, perfiles ni cachés.</p></article>

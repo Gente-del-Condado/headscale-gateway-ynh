@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manual de instalación, administración y desarrollo de Headscale Gateway.">
+  <title>Privacidad Android · Headscale Gateway</title>
+  <link rel="stylesheet" href="assets/manual.css">
+  <script src="assets/search-data.js" defer></script>
+  <script src="assets/manual.js" defer></script>
+</head>
+<body data-base=".">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <details id="manual-menu" open>
+        <summary>Índice del manual</summary>
+        <search>
+          <label for="manual-search">Buscar en el manual</label>
+          <input id="manual-search" type="search" placeholder="Copias, DNS, instalación…" aria-controls="search-results">
+          <p id="search-status" role="status"></p>
+          <ul id="search-results" hidden></ul>
+        </search>
+        <nav aria-label="Temas del manual">
+          
+            
+              <a class="nav-home" href="index.html" >Inicio</a>
+            
+          
+            
+              <p class="nav-group">Empezar</p>
+              <ul>
+                <li><a href="PRIMEROS_PASOS.html" >Primeros pasos</a></li>
+              
+                <li><a href="USO_COMPLETO.html" >Manual de uso</a></li>
+              
+                <li><a href="EJEMPLOS.html" >Ejemplos completos</a></li>
+              
+                <li><a href="CAPTURAS.html" >Capturas del panel</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Instalar</p>
+              <ul>
+                <li><a href="HOME_ASSISTANT.html" >Home Assistant</a></li>
+              
+                <li><a href="INTEGRACION_HA.html" >Entidades en Home Assistant</a></li>
+              
+                <li><a href="YUNOHOST.html" >YunoHost</a></li>
+              
+                <li><a href="ANDROID_USO.html" >Android</a></li>
+              
+                <li><a href="PRIVACIDAD_ANDROID.html" aria-current="page">Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
+                <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
+              
+                <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Administrar</p>
+              <ul>
+                <li><a href="RED_Y_CA_LAN.html" >Red, puertos y CA</a></li>
+              
+                <li><a href="CA-FEDERACION.html" >Confianza y federación</a></li>
+              
+                <li><a href="RECUPERAR_ACCESO.html" >Recuperar el acceso</a></li>
+              
+                <li><a href="SOLUCION_PROBLEMAS.html" >Resolver problemas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Desarrollar</p>
+              <ul>
+                <li><a href="ESTRUCTURA.html" >Estructura del proyecto</a></li>
+              
+                <li><a href="ARQUITECTURA.html" >Arquitectura y flujos</a></li>
+              
+                <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
+              
+                <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
+              
+                <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
+              
+                <li><a href="MIGRACION_REPOSITORIO.html" >Git y entregas</a></li>
+              
+                <li><a href="PRUEBAS.html" >Pruebas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Referencia</p>
+              <ul>
+                <li><a href="MODELOS_API.html" >Modelos de la API</a></li>
+              
+                <li><a href="API_CLI.html" >Guía API y CLI</a></li>
+              
+                <li><a href="PORTAL_Y_FEDERACION.html" >Portal y federación</a></li>
+              
+                <li><a href="HELPER_CA.html" >Helper de certificados</a></li>
+              
+                <li><a href="IDIOMAS_Y_REGISTROS.html" >Idiomas y registros</a></li>
+              
+                <li><a href="ANDROID.html" >Android por dentro</a></li>
+              
+                <li><a href="FEDERACION_WINDOWS.html" >Prueba entre Windows y Linux</a></li>
+              
+                <li><a href="LEEME_BINARIOS.html" >Paquetes de ejecutables</a></li>
+              
+                <li><a href="VERIFICACION_FINAL.html" >Validación y límites</a></li>
+              
+                <li><a href="LICENCIAS.html" >Licencias</a></li>
+              
+                <li><a href="ESCRITORIO_LICENCIAS.html" >Fuentes del escritorio</a></li>
+              
+                <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
+              </ul>
+            
+          
+        </nav>
+      </details>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Privacidad Android</p>
+      <article class="prose"><h1 id="privacidad-de-headscale-gateway-para-android">Privacidad de Headscale Gateway para Android</h1>
+<p>Actualizado el 13 de noviembre de 2026 para la versión 1.4.7.</p>
+<p>Headscale Gateway ejecuta un nodo de tu red Headscale y publica los servicios
+que configuras. El desarrollador no proporciona una cuenta, un servidor VPN
+central ni un servicio de recopilación de datos. No se incluyen publicidad,
+analítica de uso ni SDK de seguimiento.</p>
+<h2 id="datos-y-conexiones">Datos y conexiones</h2>
+<p>La configuración, las credenciales, las claves VPN, los certificados y la base
+SQLite se guardan en el almacenamiento privado de la aplicación. Android
+Keystore protege los datos de acceso iniciales. Las copias automáticas del
+sistema están deshabilitadas. Los registros de diagnóstico permanecen en el
+dispositivo salvo que tú decidas compartirlos; revísalos antes de hacerlo.</p>
+<p>La aplicación se comunica con el servidor Headscale que indiques, con los nodos
+de tu red y con los servicios DNS, ACME, identidad o repositorios que actives.
+Estos operadores pueden recibir direcciones IP, nombres de nodo, solicitudes
+DNS y otros metadatos necesarios para la función configurada. Sus políticas y
+su conservación de datos dependen de sus respectivos administradores.
+No configures servidores que no sean de confianza.</p>
+<h2 id="permiso-vpn">Permiso VPN</h2>
+<p><strong>Conectar aplicaciones</strong> solicita tu consentimiento antes del permiso VPN de
+Android. El adaptador procesa tráfico TCP, UDP y DNS de las aplicaciones del
+perfil. El tráfico de la red privada se cifra entre los nodos mediante el motor
+Tailscale. Sin nodo de salida, Internet usa la conexión habitual del teléfono a
+través del adaptador; con un nodo de salida configurado, pasa por ese nodo.
+El administrador del nodo de salida puede observar los metadatos de conexión
+y el tráfico que no esté protegido además por HTTPS u otro cifrado de extremo
+a extremo. La aplicación no vende ni redirige tráfico con fines publicitarios.</p>
+<p>Android solo permite una VPN activa por perfil. Puedes desconectarla desde la
+aplicación o los ajustes del sistema. Desconectar las aplicaciones conserva el
+Gateway; <strong>Detener todo</strong> detiene también el nodo y sus servicios. No se ofrece
+VPN siempre activa ni bloqueo de conexiones al iniciar el teléfono.</p>
+<h2 id="archivos-exportaciones-y-eliminación">Archivos, exportaciones y eliminación</h2>
+<p>El selector de Android permite elegir dónde guardar o leer una exportación.
+No se solicita acceso general al almacenamiento. Los perfiles y las copias
+cifradas solo se suben a un repositorio cuando configuras y solicitas esa
+función. Conserva su contraseña de recuperación fuera de la aplicación.</p>
+<p>Puedes borrar los datos locales desde los ajustes de Android o desinstalar la
+aplicación. Esto no elimina las copias que hayas exportado ni el registro del
+nodo en Headscale: elimínalos en sus destinos si también quieres retirarlos.</p>
+<h2 id="contacto-y-cambios">Contacto y cambios</h2>
+<p>Para consultas de privacidad utiliza las
+<a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/issues">incidencias del proyecto</a>.
+No publiques contraseñas, claves, copias ni información de tu red en una
+incidencia pública. Los cambios de tratamiento se documentarán aquí y, cuando
+corresponda, requerirán un nuevo consentimiento en la aplicación.</p></article>
+      <footer class="page-footer">
+        <p>Headscale Gateway · Documentación en español</p>
+        <a href="MANUAL_WEB.html">Cómo editar este manual</a>
+      </footer>
+    </main>
+    <aside class="page-toc">
+      <nav aria-label="En esta página"><p>En esta página</p><ul>
+        
+          <li><a href="#datos-y-conexiones">Datos y conexiones</a></li>
+        
+          <li><a href="#permiso-vpn">Permiso VPN</a></li>
+        
+          <li><a href="#archivos-exportaciones-y-eliminación">Archivos, exportaciones y eliminación</a></li>
+        
+          <li><a href="#contacto-y-cambios">Contacto y cambios</a></li>
+        
+      </ul></nav>
+    </aside>
+  </div>
+</body>
+</html>

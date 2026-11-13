@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.6</span><a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -55,6 +55,10 @@
               
                 <li><a href="ANDROID_USO.html" >Android</a></li>
               
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
                 <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
               
                 <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
@@ -84,6 +88,12 @@
                 <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
               
                 <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
               
                 <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
               
@@ -146,86 +156,68 @@ aviso no forman parte de los paquetes compilados del Gateway.</p>
 <code>go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 -show verbose ./...</code>.
 Desde <code>src/desktop/</code>, ejecuta <code>npm ci</code>, <code>npm audit</code>, <code>npm test</code> y
 <code>npm run pack</code>. La prueba <code>npm run smoke</code> requiere un escritorio gráfico.</p>
-<h2 id="revisión-documental-anterior">Revisión documental anterior</h2>
-<p>Revisión documental del 7 de noviembre de 2026, con motor <strong>1.4.4</strong>.
-Esta página distingue las comprobaciones de mantenimiento de la aceptación en
-instalaciones reales. Los procedimientos se mantienen en <a href="PRUEBAS.html">PRUEBAS.md</a>
-y <a href="PLATAFORMAS.html">PLATAFORMAS.md</a>.</p>
-<h2 id="comprobado-durante-esta-actualización">Comprobado durante esta actualización</h2>
-<table>
-<thead>
-<tr>
-<th scope="col">Área</th>
-<th scope="col">Resultado</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Estructura y versiones</td>
-<td>Rutas canónicas, avisos de terceros y manifiestos coherentes</td>
-</tr>
-<tr>
-<td>Referencia e idiomas</td>
-<td>108 contratos de código, 20 opciones CLI y 24 operaciones externas; 2.360 mensajes cubiertos</td>
-</tr>
-<tr>
-<td>Contratos Python</td>
-<td>17 pruebas correctas, incluidos exportación, paquetes privados e i18n de solo lectura</td>
-</tr>
-<tr>
-<td>JavaScript</td>
-<td>Sintaxis y 28 pruebas correctas entre panel y bandeja</td>
-</tr>
-<tr>
-<td>Go</td>
-<td>Suite completa, pruebas comerciales, <code>go vet</code>, formato y compilación Linux correctos</td>
-</tr>
-<tr>
-<td>Revisión de comentarios</td>
-<td>Mismos tokens Go en 82 archivos y mismo AST Python en la integración, excluidos comentarios y docstrings</td>
-</tr>
-<tr>
-<td>Exportación</td>
-<td>ZIP de fuentes validado, con 3.874 archivos de contenido y su manifiesto SHA-256</td>
-</tr>
-<tr>
-<td>Instaladores privados</td>
-<td>Home Assistant y YunoHost regenerados y comprobados contra sus fuentes</td>
-</tr>
-<tr>
-<td>Manual web</td>
-<td>Compilación estricta sin avisos; 34 páginas HTML y más de 1.600 enlaces locales comprobados</td>
-</tr>
-<tr>
-<td>Navegador</td>
-<td>Portada, búsqueda por título, navegación a guías de plataforma y menú con teclado revisados; sin desbordamiento horizontal en la vista móvil de 390 px</td>
-</tr>
-</tbody>
-</table>
-<p>Los cambios del motor en esta revisión son comentarios de mantenimiento en
-español. La estructura del código y la versión se conservan. Las guías de
-Home Assistant y YunoHost se incorporan tanto a los instaladores como a la web
-desde sus fuentes originales, sin copias editables independientes.</p>
-<p>Se han retirado metadatos del escritorio y una semilla de traducción que ya
-había sido sustituida por los catálogos. Se conservan los binarios y el archivo
-de fuentes requeridos por los instaladores privados, las licencias y la APK
-actual de pruebas. La salida HTML se genera en <code>builds/manual/</code>.</p>
-<h2 id="validaciones-previas-y-pendientes">Validaciones previas y pendientes</h2>
-<p>La revisión de estructura del 5 de noviembre registró compilaciones Linux,
-Windows y macOS, despliegue aislado, recuperación en consola y comprobaciones
-de firma y alineación de la APK Android. Esas comprobaciones no se vuelven a
-atribuir automáticamente a cada edición de documentación.</p>
-<p>Las pruebas funcionales previas con Headscale HTTPS, servicios, PKI, copias,
-restauración y túnel Android se describen en <a href="ANDROID.html">ANDROID.md</a>. Android
-Lint registró 0 errores y 23 avisos; la instrumentación de la APK reorganizada
-se compiló, pero no se volvió a ejecutar en aquella revisión.</p>
-<p>Siguen pendientes la aceptación completa en Home Assistant OS y en una VM
-YunoHost, <code>package_check</code>, teléfonos físicos, cambios reales de red y batería,
-y proveedores DNS/ACME reales. Las pruebas aisladas y los simuladores no
-sustituyen estas comprobaciones.</p>
-<p>El workflow de GitHub Pages está preparado y el HTML se ha probado localmente.
-La publicación real requiere habilitar Pages en el repositorio elegido. Esta
-actualización no constituye un despliegue web ni una nueva publicación de APK.</p>
+<h2 id="preparación-de-la-versión-147">Preparación de la versión 1.4.7</h2>
+<p>La versión común se aplica al motor, Home Assistant, YunoHost, la bandeja y
+Android. El cliente de bandeja admite una URL base con subruta y limita la
+respuesta de la API a 4 MiB mientras la recibe, conservando el rechazo de
+redirecciones y de HTTP remoto. Las pruebas HTTP incluyen una subruta real,
+una respuesta excesiva y un intento de redirección.</p>
+<p><code>tools/verify.sh</code> ha terminado correctamente: contratos Python, panel y
+bandeja JavaScript, pruebas Go, variantes comerciales, formato, vet y
+compilación Linux. Los dos análisis de Go (módulos y llamadas) y <code>npm audit</code>
+no detectaron vulnerabilidades en esta revisión. Esto es un resultado fechado,
+no una garantía de ausencia futura; los flujos repiten la auditoría antes de
+fusionar y publicar.</p>
+<p>Android usa el motor Go común en arm64-v8a y x86_64, target API 36 y una clave
+estable guardada fuera del repositorio. El verificador comprueba identidad,
+versión, ausencia de depuración, firma y alineación ELF de 16 KiB de todas las
+bibliotecas nativas. Se preparan APK directo firmado, APK sin firmar para
+F-Droid y AAB para Play. El gesto Atrás usa la API moderna desde Android 13;
+el inicio conserva la navegación del sistema. Los secretos se excluyen tanto
+de las copias en la nube como de la transferencia automática entre dispositivos.</p>
+<p>La aceptación en teléfonos físicos, cambios Wi-Fi/datos, suspensión, IPv6 y
+proveedores DNS/ACME reales sigue pendiente. El emulador local se cierra con
+un fallo de segmentación antes de ofrecer un dispositivo ADB; no se atribuye
+una prueba funcional nueva a esa ejecución. Los resultados de Waydroid en
+<a href="ANDROID.html">ANDROID.md</a> son antecedentes de la adaptación del motor, no una
+certificación de cada APK nueva. Tampoco se ha publicado en F-Droid ni Play.</p>
+<p>La construcción local con <code>fdroidserver 2.4.5</code>, desde una exportación Git sin
+historial privado, completó el escaneo de fuentes, la compilación de ambos
+motores Go y del APK y el escaneo binario. Se usó <code>build --test --no-tarball
+--scan-binary</code>; no equivale a una construcción en los servidores oficiales ni
+a la admisión en F-Droid. El Lint de Android, repetido sin reutilizar tareas,
+terminó con cero errores y 23 avisos pendientes de mantenimiento.</p>
+<p>El paquete YunoHost incorpora descripción en inglés y español, README generado
+con la versión, documentación administrativa completa y pruebas de raíz/subruta
+con sesión SSO administradora. El linter oficial ya no registra errores de
+empaquetado; señala que la aplicación todavía no está incorporada al catálogo,
+ni tiene estado y categoría asignados allí. La
+<a href="CATALOGO_YUNOHOST.html">solicitud y sus evidencias</a> distinguen
+estos avisos de los fallos funcionales. Los resultados de <code>package_check</code> se
+adjuntan al material de solicitud; no se asigna un nivel oficial localmente.</p>
+<p>El 13 de noviembre de 2026, <code>package_check</code> completó las siete comprobaciones
+en 28 minutos y 36 segundos sobre YunoHost 12.1.41.2, amd64: linter,
+instalación raíz, subruta, multiinstancia, copia/restauración, actualización
+desde la misma versión y cambio de URL. Se corrigió también la recuperación
+de permisos privados de <code>startup.json</code> tras restaurar. Las sumas de los 950
+archivos de ejecución, configuración y payload se comparan con la entrega.
+Esto no acredita una ejecución en arm64 ni una actualización desde cada
+versión anterior.</p>
+<p>El resultado global local del comprobador es <code>0 (Broken)</code>: el linter marca
+<code>AppCatalog.is_in_catalog</code> como crítico y <code>AppCatalog.state_is_working</code> como
+error al no existir todavía la entrada oficial. El aviso
+<code>AppCatalog.has_category</code> tiene la misma causa. Se conservan esos resultados
+sin alterar el catálogo para obtener una calificación. Las siete pruebas
+correctas y estos avisos se presentan por separado para la revisión oficial.</p>
+<p>El manual se compila en modo estricto y se revisan sus enlaces locales. Las dos
+webs de GitHub Pages se publican desde las mismas fuentes. Una compilación del
+manual no acredita por sí sola que la publicación remota haya terminado.</p>
+<h2 id="límites-de-la-entrega">Límites de la entrega</h2>
+<p>Las compilaciones cruzadas de Windows y macOS verifican que el código compila;
+no sustituyen una prueba de escritorio en esos sistemas. Home Assistant OS y
+los equipos reales requieren su aceptación específica. Las pruebas se hacen
+sin actualizar ni reinstalar el YunoHost personal. La revisión oficial del
+catálogo y la aprobación de las tiendas pertenecen a sus respectivos equipos.</p>
 <h2 id="repetir-la-comprobación">Repetir la comprobación</h2>
 <p>Desde la raíz del proyecto:</p>
 <pre tabindex="0"><code class="language-bash">bash tools/verify.sh
@@ -255,11 +247,9 @@ recursos de las guías, como las capturas, conservando sus subdirectorios.</p></
         
           <li><a href="#revisión-de-dependencias-de-la-versión-146">Revisión de dependencias de la versión 1.4.6</a></li>
         
-          <li><a href="#revisión-documental-anterior">Revisión documental anterior</a></li>
+          <li><a href="#preparación-de-la-versión-147">Preparación de la versión 1.4.7</a></li>
         
-          <li><a href="#comprobado-durante-esta-actualización">Comprobado durante esta actualización</a></li>
-        
-          <li><a href="#validaciones-previas-y-pendientes">Validaciones previas y pendientes</a></li>
+          <li><a href="#límites-de-la-entrega">Límites de la entrega</a></li>
         
           <li><a href="#repetir-la-comprobación">Repetir la comprobación</a></li>
         

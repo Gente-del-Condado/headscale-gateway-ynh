@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.6</span><a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -55,6 +55,10 @@
               
                 <li><a href="ANDROID_USO.html" aria-current="page">Android</a></li>
               
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
                 <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
               
                 <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
@@ -84,6 +88,12 @@
                 <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
               
                 <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" >Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
               
                 <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
               
@@ -130,9 +140,9 @@
       <article class="prose"><h1 id="headscale-gateway-para-android">Headscale Gateway para Android</h1>
 <p>Aplicación experimental con el motor completo del proyecto, panel administrativo
 en español y conexión de las aplicaciones del teléfono a la misma VPN.
-No necesita root ni otro cliente Tailscale instalado. Forgejo puede seguir
-siendo privado: la compilación y la distribución del APK son independientes
-de Google Play y Marketplace.</p>
+No necesita root ni otro cliente Tailscale instalado. La descarga directa utiliza una firma estable. Se preparan también variantes
+para F-Droid y Google Play; no están publicadas en esas tiendas. F-Droid exige
+los fuentes completos en un repositorio público.</p>
 <h2 id="uso">Uso</h2>
 <ol>
 <li>Instala la APK y abre <strong>Headscale Gateway</strong>.</li>
@@ -199,7 +209,7 @@ y evitar MagicDNS; en Waydroid se comprobó este comportamiento. La aplicación
 muestra un aviso y permite abrir el ajuste de Android, sin cambiarlo por sí sola.
 Un cortafuegos también puede afectar la conexión. Conserva la validación TLS.</p>
 <h2 id="configuración-servicios-y-copias">Configuración, servicios y copias</h2>
-<p>La revisión <code>android.3</code> conserva las API y formatos comunes. Se han comprobado
+<p>La adaptación del motor Go compartido, introducida en <code>android.3</code>, conserva las API y formatos comunes. Se han comprobado
 Headscale por HTTPS con clave API, inventario de nodos, creación/edición/borrado
 de servicios, generación y descarga de la CA, perfiles <code>.hgwcfg</code> y copias <code>.hgw</code>.
 Las copias parcial y completa creadas en Android se han descifrado y leído con
@@ -233,16 +243,37 @@ Con <code>--arch arm64-v8a</code> se limita al teléfono; con <code>--arch x86_6
 Las compilaciones de pruebas usan el identificador
 <code>org.headscalegateway.android.dev</code> para coexistir con una futura entrega estable.
 No se añaden las carpetas de compilación ni las claves a Git.</p>
-<p>Una entrega privada firmada requiere las variables <code>HGW_ANDROID_KEYSTORE</code>,
-<code>HGW_ANDROID_STORE_PASSWORD</code>, <code>HGW_ANDROID_KEY_ALIAS</code> y <code>HGW_ANDROID_KEY_PASSWORD</code>,
-y ejecutar el mismo comando con <code>--release</code>. Conserva tu clave de firma fuera
-del repositorio: es necesaria para actualizar sin perder los datos.</p>
+<h2 id="firma-estable-y-tiendas">Firma estable y tiendas</h2>
+<p>Crea una identidad una sola vez, fuera del repositorio:</p>
+<pre tabindex="0"><code class="language-sh">python3 tools/android_signing.py init &quot;$HOME/.local/share/headscale-gateway-signing/android&quot;
+</code></pre>
+<p>Respalda toda esa carpeta de forma segura. Para actualizar la descarga directa
+se necesita la misma clave; no la vuelvas a generar en cada versión. El perfil
+privado se carga únicamente para el proceso de construcción, sin contraseñas
+en los argumentos de la orden.</p>
+<pre tabindex="0"><code class="language-sh">python3 tools/build_android_apk.py --release --channel direct \
+  --sdk &quot;$ANDROID_HOME&quot; --ndk &quot;$ANDROID_NDK_HOME&quot; --java-home &quot;$JAVA_HOME&quot; \
+  --gradle &quot;$PWD/android/gradlew&quot; \
+  --signing-config &quot;$HOME/.local/share/headscale-gateway-signing/android/signing.json&quot;
+</code></pre>
+<p>La salida firmada es <code>builds/android/headscale-gateway-release.apk</code>. La herramienta
+verifica identidad, versión, SDK, firma, ausencia de depuración y alineación de
+16 KiB de todas las bibliotecas nativas para ambas arquitecturas. Guarda un
+informe <code>.verification.json</code> y una suma <code>.sha256</code> junto al artefacto.</p>
+<p>Para Play usa <code>--channel play --bundletool /ruta/bundletool.jar</code>, conservando
+el perfil de firma; genera <code>headscale-gateway-play.aab</code>. Para F-Droid utiliza
+<code>--release --channel fdroid</code>, sin perfil: genera
+<code>headscale-gateway-fdroid-unsigned.apk</code>. Este APK sin firma es para el constructor
+de F-Droid y no se instala como entrega directa. Los canales pueden usar firmas
+diferentes; cambiar de canal puede requerir copia, desinstalación e importación.
+Consulta <a href="ANDROID_CANALES.html">los canales y sus requisitos</a> y la
+<a href="PRIVACIDAD_ANDROID.html">política de privacidad</a>.</p>
 <h2 id="verificación-y-límites">Verificación y límites</h2>
 <p>Se compilan ambas arquitecturas y se comprueba la alineación ELF de 16 KiB.
 La instrumentación de <code>android/src/androidTest/</code> verifica el arranque real, la
 sesión del panel y el rechazo del adaptador sin credenciales. Incluye una
 prueba opcional con un Headscale y otro nodo temporales, TCP, UDP y MagicDNS.
-Consulta <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/android/PRUEBAS.md">los pasos del laboratorio</a>. La APK de pruebas
+Consulta <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/android/PRUEBAS.md">los pasos del laboratorio</a>. La APK de pruebas
 instrumentadas se construye aparte y no se distribuye como aplicación.</p>
 <p>Waydroid requiere desactivar temporalmente su suspensión automática durante
 las pruebas largas, y restaurar el valor previo al terminarlas. No se borran
@@ -252,7 +283,7 @@ autorización si hay otra VPN activa.</p>
 en <a href="ANDROID.html">la documentación Android</a>. La versión sigue siendo
 experimental hasta validar también un teléfono físico, reconexión Wi-Fi/datos,
 suspensión, IPv6 y proveedores DNS/ACME reales.</p>
-<p>Consulta <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/android/TERCEROS.md">los componentes reutilizados y sus avisos</a>.</p></article>
+<p>Consulta <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/android/TERCEROS.md">los componentes reutilizados y sus avisos</a>.</p></article>
       <footer class="page-footer">
         <p>Headscale Gateway · Documentación en español</p>
         <a href="MANUAL_WEB.html">Cómo editar este manual</a>
@@ -268,6 +299,8 @@ suspensión, IPv6 y proveedores DNS/ACME reales.</p>
           <li><a href="#configuración-servicios-y-copias">Configuración, servicios y copias</a></li>
         
           <li><a href="#compilar">Compilar</a></li>
+        
+          <li><a href="#firma-estable-y-tiendas">Firma estable y tiendas</a></li>
         
           <li><a href="#verificación-y-límites">Verificación y límites</a></li>
         

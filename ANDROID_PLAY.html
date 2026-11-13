@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manual de instalación, administración y desarrollo de Headscale Gateway.">
+  <title>Preparar Google Play · Headscale Gateway</title>
+  <link rel="stylesheet" href="assets/manual.css">
+  <script src="assets/search-data.js" defer></script>
+  <script src="assets/manual.js" defer></script>
+</head>
+<body data-base=".">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <details id="manual-menu" open>
+        <summary>Índice del manual</summary>
+        <search>
+          <label for="manual-search">Buscar en el manual</label>
+          <input id="manual-search" type="search" placeholder="Copias, DNS, instalación…" aria-controls="search-results">
+          <p id="search-status" role="status"></p>
+          <ul id="search-results" hidden></ul>
+        </search>
+        <nav aria-label="Temas del manual">
+          
+            
+              <a class="nav-home" href="index.html" >Inicio</a>
+            
+          
+            
+              <p class="nav-group">Empezar</p>
+              <ul>
+                <li><a href="PRIMEROS_PASOS.html" >Primeros pasos</a></li>
+              
+                <li><a href="USO_COMPLETO.html" >Manual de uso</a></li>
+              
+                <li><a href="EJEMPLOS.html" >Ejemplos completos</a></li>
+              
+                <li><a href="CAPTURAS.html" >Capturas del panel</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Instalar</p>
+              <ul>
+                <li><a href="HOME_ASSISTANT.html" >Home Assistant</a></li>
+              
+                <li><a href="INTEGRACION_HA.html" >Entidades en Home Assistant</a></li>
+              
+                <li><a href="YUNOHOST.html" >YunoHost</a></li>
+              
+                <li><a href="ANDROID_USO.html" >Android</a></li>
+              
+                <li><a href="PRIVACIDAD_ANDROID.html" >Privacidad Android</a></li>
+              
+                <li><a href="ANDROID_CANALES.html" >Canales Android</a></li>
+              
+                <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
+              
+                <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Administrar</p>
+              <ul>
+                <li><a href="RED_Y_CA_LAN.html" >Red, puertos y CA</a></li>
+              
+                <li><a href="CA-FEDERACION.html" >Confianza y federación</a></li>
+              
+                <li><a href="RECUPERAR_ACCESO.html" >Recuperar el acceso</a></li>
+              
+                <li><a href="SOLUCION_PROBLEMAS.html" >Resolver problemas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Desarrollar</p>
+              <ul>
+                <li><a href="ESTRUCTURA.html" >Estructura del proyecto</a></li>
+              
+                <li><a href="ARQUITECTURA.html" >Arquitectura y flujos</a></li>
+              
+                <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
+              
+                <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="ANDROID_FDROID.html" >Publicar en F-Droid</a></li>
+              
+                <li><a href="ANDROID_PLAY.html" aria-current="page">Preparar Google Play</a></li>
+              
+                <li><a href="CATALOGO_YUNOHOST.html" >Catálogo YunoHost</a></li>
+              
+                <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
+              
+                <li><a href="MIGRACION_REPOSITORIO.html" >Git y entregas</a></li>
+              
+                <li><a href="PRUEBAS.html" >Pruebas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Referencia</p>
+              <ul>
+                <li><a href="MODELOS_API.html" >Modelos de la API</a></li>
+              
+                <li><a href="API_CLI.html" >Guía API y CLI</a></li>
+              
+                <li><a href="PORTAL_Y_FEDERACION.html" >Portal y federación</a></li>
+              
+                <li><a href="HELPER_CA.html" >Helper de certificados</a></li>
+              
+                <li><a href="IDIOMAS_Y_REGISTROS.html" >Idiomas y registros</a></li>
+              
+                <li><a href="ANDROID.html" >Android por dentro</a></li>
+              
+                <li><a href="FEDERACION_WINDOWS.html" >Prueba entre Windows y Linux</a></li>
+              
+                <li><a href="LEEME_BINARIOS.html" >Paquetes de ejecutables</a></li>
+              
+                <li><a href="VERIFICACION_FINAL.html" >Validación y límites</a></li>
+              
+                <li><a href="LICENCIAS.html" >Licencias</a></li>
+              
+                <li><a href="ESCRITORIO_LICENCIAS.html" >Fuentes del escritorio</a></li>
+              
+                <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
+              </ul>
+            
+          
+        </nav>
+      </details>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Preparar Google Play</p>
+      <article class="prose"><h1 id="preparación-de-google-play-147">Preparación de Google Play · 1.4.7</h1>
+<p>Estado: AAB preparado; no se ha creado una cuenta ni publicado una aplicación.
+La revisión de Google y las pruebas exigidas a la cuenta son pasos externos.</p>
+<ul>
+<li>Identificador: <code>org.headscalegateway.android</code>.</li>
+<li>Versión: <code>1.4.7</code>; versionCode: <code>10040074</code>; min SDK 24; target SDK 36.</li>
+<li>Arquitecturas: arm64-v8a y x86_64; bibliotecas alineadas a 16 KiB.</li>
+<li>AAB: <code>builds/android/headscale-gateway-play.aab</code>.</li>
+<li>Privacidad pública: https://gente-del-condado.github.io/headscale-gateway_ynh/PRIVACIDAD_ANDROID.html</li>
+<li>Categoría propuesta: Herramientas. Sin anuncios, compras ni suscripción obligatoria.</li>
+</ul>
+<h2 id="firma-y-acceso">Firma y acceso</h2>
+<p>El AAB utiliza la identidad estable local. Al crear Play App Signing decide si
+Google conservará esa clave de aplicación o si utilizarás otra; las firmas de
+F-Droid, Play y descarga directa pueden ser distintas. Con firmas distintas no
+se puede actualizar una instalación desde otro canal sin desinstalarla. Exporta
+antes los datos y conserva la contraseña de la copia. No subas la clave privada
+al repositorio ni la envíes por chat. La consola necesita la clave pública de
+subida y, según la opción elegida, un procedimiento separado de inscripción.</p>
+<p>Para revisión se debe facilitar un Headscale temporal y datos de prueba, nunca
+las credenciales de producción. Documenta el alta del nodo, la apertura del
+panel y cómo conectar/desconectar las aplicaciones. Prepara un vídeo de esas
+operaciones y capturas reales del móvil antes de enviar la solicitud.</p>
+<h2 id="declaraciones-que-debe-revisar-el-titular">Declaraciones que debe revisar el titular</h2>
+<p><code>VpnService</code> es una función principal: acceso de las aplicaciones del teléfono
+a una red Headscale privada autogestionada. El tráfico privado se cifra entre
+nodos; un nodo de salida es opcional. Se presenta una explicación y una acción
+afirmativa antes del permiso Android. No hay monetización ni publicidad mediante
+el tráfico. Documenta expresamente esta función en la ficha.</p>
+<p>Los dos servicios en primer plano usan <code>specialUse</code>: el nodo publica servicios
+HTTPS durante una sesión iniciada por el usuario; el otro mantiene el túnel
+opcional de aplicaciones. Tienen notificación persistente y controles de
+parada. Aporta la explicación y demostración que solicite la consola.</p>
+<p>Seguridad de los datos: no hay analítica ni recolección por un servidor del
+desarrollador. Hay tratamiento local y transferencias funcionales a servidores
+seleccionados por el usuario (IP, identidad de nodo, DNS, configuración y copias
+si las activa). Revisa las definiciones y excepciones actuales del formulario;
+no marques automáticamente «no se recopilan datos» sin comprobar el alcance de
+esos destinos y las opciones que se entregan al revisor. La aplicación permite
+borrar los datos locales y gestionar las copias externas por separado.</p>
+<p>Completa clasificación de contenido, audiencia, datos de contacto, país,
+identidad del titular y pruebas cerradas si corresponden a la cuenta. No se
+promete aceptación ni se han rellenado formularios en nombre del titular.</p>
+<p>Referencias oficiales: <a href="https://support.google.com/googleplay/android-developer/answer/12564964">VPN</a>,
+<a href="https://developer.android.com/studio/publish/app-signing">firma</a> y
+<a href="https://support.google.com/googleplay/android-developer/answer/11926878">nivel de API</a>.</p></article>
+      <footer class="page-footer">
+        <p>Headscale Gateway · Documentación en español</p>
+        <a href="MANUAL_WEB.html">Cómo editar este manual</a>
+      </footer>
+    </main>
+    <aside class="page-toc">
+      <nav aria-label="En esta página"><p>En esta página</p><ul>
+        
+          <li><a href="#firma-y-acceso">Firma y acceso</a></li>
+        
+          <li><a href="#declaraciones-que-debe-revisar-el-titular">Declaraciones que debe revisar el titular</a></li>
+        
+      </ul></nav>
+    </aside>
+  </div>
+</body>
+</html>
