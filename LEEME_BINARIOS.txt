@@ -22,6 +22,6 @@ terminal interactiva; no está en journalctl ni en los archivos de registro.
 
 Código propio AGPL-3.0-only: LICENSE y NOTICE. Dependencias: NOTICE y third_party/.
 El módulo de suscripción está desactivado en esta distribución normal.
-Para compilarlo activado: docs/SUSCRIPCIONES.md. Antes de vender la mini GUI,
-revisar las tareas de cumplimiento pendientes en docs/LICENCIAS.md.
+Para compilarlo activado: docs/SUSCRIPCIONES.md. Al redistribuir la mini GUI,
+conserva sus fuentes y avisos en legal/; consulta docs/LICENCIAS.md.
 La documentación principal se mantiene en español.

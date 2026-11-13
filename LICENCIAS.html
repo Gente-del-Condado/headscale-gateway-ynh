@@ -116,6 +116,8 @@
               
                 <li><a href="LICENCIAS.html" aria-current="page">Licencias</a></li>
               
+                <li><a href="ESCRITORIO_LICENCIAS.html" >Fuentes del escritorio</a></li>
+              
                 <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
               </ul>
             
@@ -204,10 +206,28 @@ no forman parte de las fuentes del programa ni se publican.</p>
 </tbody>
 </table>
 <p>La referencia a GPL detectada en <code>modernc.org/sqlite/LICENSE-3RD-PARTY.md</code> está en el texto de licencias secundarias de MPL incluido en su inventario transitivo; <strong>no demuestra que el controlador SQLite enlazado sea GPL</strong>. Ese mismo documento distingue expresamente componentes enlazados, solo pruebas y materiales fuera de compilación. Las coincidencias en avisos agregados deben revisarse en contexto.</p>
-<h2 id="pendiente-de-distribución-del-runtime-de-escritorio">Pendiente de distribución del runtime de escritorio</h2>
-<p><code>LICENSES.chromium.html</code> incluye componentes bajo MPL y LGPL, incluido FFmpeg. No es correcto afirmar que toda la mini GUI está únicamente bajo MIT. Los permisos comerciales y las obligaciones de esos componentes deben respetarse también al distribuir el proyecto bajo AGPL-3.0.</p>
-<p>Esta entrega conserva los avisos originales y no modifica Electron/FFmpeg, pero <strong>no incluye un archivo completo de los fuentes correspondientes de todos los componentes copyleft del runtime</strong> ni una oferta de fuentes correspondiente. Antes de redistribuir el runtime de escritorio hay que cerrar ese cumplimiento: identificar las compilaciones concretas, disponer de los fuentes y modificaciones pertinentes, cumplir los mecanismos de sustitución/revinculación cuando apliquen y no imponer restricciones contractuales contrarias a sus licencias. No se considera resuelto simplemente por incluir este README.</p>
-<p>No se ha detectado una licencia principal GPL/AGPL en los 78 módulos enlazados del servidor/helper al revisar sus textos principales; esto no elimina la necesidad de conservar y revisar los avisos incorporados. El inventario no es una auditoría de patentes, marcas, vulnerabilidades ni procedencia de cada línea.</p>
+<h2 id="distribución-del-runtime-de-escritorio">Distribución del runtime de escritorio</h2>
+<p>Cada paquete de escritorio incorpora un directorio <code>legal/</code> con los avisos
+originales de Electron/Chromium, los fuentes completos de Electron, Chromium
+(incluido FFmpeg), Node y NAN, los parches de Electron, las instrucciones de
+construcción y los fuentes del cliente de bandeja. Se conserva cada licencia
+MPL/LGPL/MIT/BSD de terceros; la AGPL-3.0-only cubre el código propio.</p>
+<p>El conjunto se fija en <code>packaging/desktop/electron-sources.lock.json</code>: Electron
+45.0.0, Chromium 156.0.8078.48 y Node 24.22.0. La primera preparación descarga
+unos 4,5 GB fuera de Git y los incorpora físicamente a cada distribución.
+Los archivos originales del runtime se contrastan con el ZIP oficial; en
+Windows se admite el cambio de iconos/metadatos PE manteniendo el código.
+El manifiesto registra sus sumas y el generador de entregas rechaza archivos
+alterados, avisos ausentes o fuentes distintos de los fijados. No se permite
+redistribuir una carpeta antigua de <code>bin/</code> sin volver a prepararla.</p>
+<p>La <a href="ESCRITORIO_LICENCIAS.html">guía de fuentes de escritorio</a> explica cómo preparar
+la entrega, aplicar los parches y sustituir una biblioteca FFmpeg compatible.
+No se añaden restricciones de ingeniería inversa para depurar modificaciones.
+Se comprueban los archivos distribuidos; no se afirma haber recompilado todo
+Chromium/Electron ni obtenido una reproducción binaria exacta del runtime.</p>
+<p>No se ha detectado una licencia principal GPL/AGPL en los 78 módulos enlazados
+del servidor/helper al revisar sus textos principales. El inventario no es una
+auditoría de patentes, marcas ni procedencia de cada línea.</p>
 <h2 id="fuentes-consultadas">Fuentes consultadas</h2>
 <ul>
 <li>Textos exactos locales: <code>src/third_party/go/</code>, <code>src/third_party/npm/</code>, <code>src/third_party/go-toolchain/</code> y <code>src/third_party/electron/</code>.</li>
@@ -236,7 +256,7 @@ python3 tools/audit_licenses.py
         
           <li><a href="#inventario-reproducible">Inventario reproducible</a></li>
         
-          <li><a href="#pendiente-de-distribución-del-runtime-de-escritorio">Pendiente de distribución del runtime de escritorio</a></li>
+          <li><a href="#distribución-del-runtime-de-escritorio">Distribución del runtime de escritorio</a></li>
         
           <li><a href="#fuentes-consultadas">Fuentes consultadas</a></li>
         

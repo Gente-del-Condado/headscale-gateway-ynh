@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manual de instalación, administración y desarrollo de Headscale Gateway.">
+  <title>Fuentes del escritorio · Headscale Gateway</title>
+  <link rel="stylesheet" href="assets/manual.css">
+  <script src="assets/search-data.js" defer></script>
+  <script src="assets/manual.js" defer></script>
+</head>
+<body data-base=".">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
+    <div class="header-links"><span>Manual · 1.4.6</span><a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway">Repositorio ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <details id="manual-menu" open>
+        <summary>Índice del manual</summary>
+        <search>
+          <label for="manual-search">Buscar en el manual</label>
+          <input id="manual-search" type="search" placeholder="Copias, DNS, instalación…" aria-controls="search-results">
+          <p id="search-status" role="status"></p>
+          <ul id="search-results" hidden></ul>
+        </search>
+        <nav aria-label="Temas del manual">
+          
+            
+              <a class="nav-home" href="index.html" >Inicio</a>
+            
+          
+            
+              <p class="nav-group">Empezar</p>
+              <ul>
+                <li><a href="PRIMEROS_PASOS.html" >Primeros pasos</a></li>
+              
+                <li><a href="USO_COMPLETO.html" >Manual de uso</a></li>
+              
+                <li><a href="EJEMPLOS.html" >Ejemplos completos</a></li>
+              
+                <li><a href="CAPTURAS.html" >Capturas del panel</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Instalar</p>
+              <ul>
+                <li><a href="HOME_ASSISTANT.html" >Home Assistant</a></li>
+              
+                <li><a href="INTEGRACION_HA.html" >Entidades en Home Assistant</a></li>
+              
+                <li><a href="YUNOHOST.html" >YunoHost</a></li>
+              
+                <li><a href="ANDROID_USO.html" >Android</a></li>
+              
+                <li><a href="INSTALACION_PRIVADA.html" >Acceso al Git privado</a></li>
+              
+                <li><a href="PLATAFORMAS.html" >Plataformas y contratos</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Administrar</p>
+              <ul>
+                <li><a href="RED_Y_CA_LAN.html" >Red, puertos y CA</a></li>
+              
+                <li><a href="CA-FEDERACION.html" >Confianza y federación</a></li>
+              
+                <li><a href="RECUPERAR_ACCESO.html" >Recuperar el acceso</a></li>
+              
+                <li><a href="SOLUCION_PROBLEMAS.html" >Resolver problemas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Desarrollar</p>
+              <ul>
+                <li><a href="ESTRUCTURA.html" >Estructura del proyecto</a></li>
+              
+                <li><a href="ARQUITECTURA.html" >Arquitectura y flujos</a></li>
+              
+                <li><a href="DESARROLLO.html" >Guía de contribución</a></li>
+              
+                <li><a href="CONTINUIDAD.html" >Continuar con otra IA</a></li>
+              
+                <li><a href="MANUAL_WEB.html" >Editar y publicar el manual</a></li>
+              
+                <li><a href="MIGRACION_REPOSITORIO.html" >Git y entregas</a></li>
+              
+                <li><a href="PRUEBAS.html" >Pruebas</a></li>
+              </ul>
+            
+          
+            
+              <p class="nav-group">Referencia</p>
+              <ul>
+                <li><a href="MODELOS_API.html" >Modelos de la API</a></li>
+              
+                <li><a href="API_CLI.html" >Guía API y CLI</a></li>
+              
+                <li><a href="PORTAL_Y_FEDERACION.html" >Portal y federación</a></li>
+              
+                <li><a href="HELPER_CA.html" >Helper de certificados</a></li>
+              
+                <li><a href="IDIOMAS_Y_REGISTROS.html" >Idiomas y registros</a></li>
+              
+                <li><a href="ANDROID.html" >Android por dentro</a></li>
+              
+                <li><a href="FEDERACION_WINDOWS.html" >Prueba entre Windows y Linux</a></li>
+              
+                <li><a href="LEEME_BINARIOS.html" >Paquetes de ejecutables</a></li>
+              
+                <li><a href="VERIFICACION_FINAL.html" >Validación y límites</a></li>
+              
+                <li><a href="LICENCIAS.html" >Licencias</a></li>
+              
+                <li><a href="ESCRITORIO_LICENCIAS.html" aria-current="page">Fuentes del escritorio</a></li>
+              
+                <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
+              </ul>
+            
+          
+        </nav>
+      </details>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      <p class="breadcrumb"><a href="index.html">Manual</a><span aria-hidden="true"> / </span>Fuentes del escritorio</p>
+      <article class="prose"><h1 id="fuentes-y-avisos-de-la-versión-de-escritorio">Fuentes y avisos de la versión de escritorio</h1>
+<p>Cada distribución Windows x64 y Linux x64 de Gateway-Tray incluye <code>legal/</code>.
+Conserva esa carpeta completa junto con el ejecutable al redistribuirlo.</p>
+<h2 id="qué-incluye">Qué incluye</h2>
+<ul>
+<li><code>LICENSE</code> y <code>LICENSES.chromium.html</code>: avisos originales del runtime concreto,
+  sin sustituirlos por la licencia de Headscale Gateway.</li>
+<li><code>sources/</code>: archivos completos de Electron, Chromium, Node y NAN. Chromium
+  incluye FFmpeg, Blink y las dependencias incorporadas con sus propios avisos.
+  Electron incluye sus parches, <code>DEPS</code>, configuraciones GN y scripts de construcción.</li>
+<li><code>application-source/</code>: fuentes del cliente Gateway-Tray, lockfile npm, scripts
+  de empaquetado y licencia AGPL-3.0-only del código propio.</li>
+<li><code>manifest.json</code>: versiones, procedencia HTTPS, sumas de archivos originales y
+  relación de todos los archivos del runtime y del conjunto de fuentes.</li>
+</ul>
+<p>La versión fijada es Electron <strong>45.0.0</strong>, commit
+<code>54f961b44b83e4ece81065ab60a182fd0c38c01e</code>, Chromium <strong>156.0.8078.48</strong> y
+Node <strong>24.22.0</strong>. El lock de este directorio fija también las sumas de las
+distribuciones oficiales Linux/Windows. Las sumas de sus ZIP se contrastaron
+con <code>SHASUMS256.txt</code> de Electron. El archivo Chromium se contrastó además con
+el MD5 publicado en los metadatos HTTPS del almacenamiento oficial de Chromium.</p>
+<p>No se han cambiado los fuentes de Electron, Chromium ni FFmpeg en el proyecto.
+El empaquetador renombra el ejecutable y añade la aplicación. En Windows puede
+actualizar iconos y metadatos PE; se comprueba que su sección <code>.text</code> coincide
+con el ejecutable oficial. El resto de archivos originales conservados se
+compara byte a byte con el ZIP oficial, incluidos FFmpeg y ambos avisos.</p>
+<h2 id="preparar-una-distribución">Preparar una distribución</h2>
+<p>Desde la raíz del proyecto, instala las dependencias de <code>src/desktop/</code> y ejecuta:</p>
+<pre tabindex="0"><code class="language-bash">cd src/desktop
+npm ci
+npm run pack:all
+</code></pre>
+<p>Se necesita Python 3.11 o posterior. La primera ejecución descarga unos 4,5 GB
+de fuentes y los ZIP oficiales en <code>builds/desktop-license-cache/</code>. Los siguientes
+empaquetados reutilizan esa caché después de comprobar sus sumas. Los archivos
+grandes son artefactos de distribución y no se guardan en el historial Git.</p>
+<p><code>pack.cjs</code> prepara y verifica <code>legal/</code> antes de sustituir una entrega existente
+en <code>bin/</code>. <code>tools/package_release.py</code> vuelve a comprobar todos los archivos y
+rechaza escritorios antiguos, fuentes ausentes o archivos alterados. Los ZIP
+Windows y los TAR Linux incluyen los fuentes, no solo un enlace ni una oferta
+de suministro futuro. Distribuye esos paquetes completos y conserva sus sumas.
+No cambies únicamente la versión de Electron en npm: actualiza este lock,
+revisa las dependencias y los avisos de la nueva versión y reconstruye ambos
+escritorios antes de distribuirlos.</p>
+<p>Para generar exclusivamente las entregas de escritorio ya preparadas:</p>
+<pre tabindex="0"><code class="language-bash">python3 tools/package_release.py --desktop-only --output releases/escritorio
+</code></pre>
+<p>El directorio de salida debe estar vacío. Cada entrega ocupa más de 4 GB y
+requiere una herramienta con soporte ZIP64/PAX. La suma del archivo final se
+publica en <code>SHA256SUMS</code> junto con el resto de artefactos de esa entrega.</p>
+<h2 id="compilar-o-modificar-electron-y-ffmpeg">Compilar o modificar Electron y FFmpeg</h2>
+<p>Los archivos de <code>sources/</code> son fuentes base más los parches de Electron.
+La guía completa de construcción y los requisitos Linux/Windows están dentro
+del archivo Electron, en <code>docs/development/build-instructions-gn.md</code> y las guías
+de cada plataforma. Los parches se enumeran en <code>patches/config.json</code>; los de
+FFmpeg están en <code>patches/ffmpeg/</code>. No compiles únicamente una versión genérica
+de FFmpeg: utiliza la revisión incluida en Chromium y los parches de Electron.</p>
+<p>Para reconstruir el árbol, extrae Chromium como <code>src/</code>, Electron como
+<code>src/electron/</code>, Node como <code>src/third_party/electron_node/</code> y NAN como
+<code>src/third_party/nan/</code>, quitando el directorio superior de cada archivo.
+Conserva los fuentes restantes de Chromium. Sigue el flujo manual de la guía
+archivada para instalar depot_tools y las herramientas/SDK de la plataforma.
+El script <code>script/apply_all_patches.py</code> de Electron aplica la lista de parches
+desde el directorio padre de <code>src/</code>; requiere inicializar los repositorios Git
+indicados en <code>patches/config.json</code>. No omitas esos parches ni cambies <code>DEPS</code>.
+Las configuraciones oficiales están en <code>build/args/</code> del archivo Electron.
+Las herramientas, SDK y espacio de compilación no están incluidos: este
+conjunto proporciona los fuentes y cambios, no un entorno de compilación
+preinstalado. No se afirma reproducibilidad binaria byte a byte de Electron.</p>
+<p>También puedes seguir la sincronización Git de la guía oficial fijando el
+checkout Electron al commit indicado arriba; <code>DEPS</code> fija el resto de revisiones.
+El proyecto valida la procedencia de los binarios oficiales y el contenido de
+los paquetes, pero no recompila Chromium/Electron completo durante su CI.</p>
+<p>FFmpeg se usa bajo LGPL-2.1-or-later, con los avisos exactos que recoge
+<code>LICENSES.chromium.html</code>; sus fuentes y cambios están en los archivos incluidos.
+Puedes modificar el programa, depurarlo y sustituir <code>libffmpeg.so</code> en Linux o
+<code>ffmpeg.dll</code> en Windows por una compilación de interfaz compatible. Detén la
+aplicación y conserva una copia antes de sustituir una biblioteca. El proyecto
+no añade restricciones de ingeniería inversa para depurar esas modificaciones.
+Las licencias MPL/LGPL de Chromium conservan sus términos y sus fuentes se
+facilitan junto con el runtime; no se relicencian como AGPL.</p>
+<p>Referencias oficiales:</p>
+<ul>
+<li>Electron: https://github.com/electron/electron/tree/v45.0.0</li>
+<li>Construcción: https://www.electronjs.org/docs/latest/development/build-instructions-gn</li>
+<li>FFmpeg: https://ffmpeg.org/legal.html</li>
+<li>LGPL 2.1: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</li>
+<li>MPL 2.0: https://www.mozilla.org/en-US/MPL/2.0/</li>
+</ul></article>
+      <footer class="page-footer">
+        <p>Headscale Gateway · Documentación en español</p>
+        <a href="MANUAL_WEB.html">Cómo editar este manual</a>
+      </footer>
+    </main>
+    <aside class="page-toc">
+      <nav aria-label="En esta página"><p>En esta página</p><ul>
+        
+          <li><a href="#qué-incluye">Qué incluye</a></li>
+        
+          <li><a href="#preparar-una-distribución">Preparar una distribución</a></li>
+        
+          <li><a href="#compilar-o-modificar-electron-y-ffmpeg">Compilar o modificar Electron y FFmpeg</a></li>
+        
+      </ul></nav>
+    </aside>
+  </div>
+</body>
+</html>

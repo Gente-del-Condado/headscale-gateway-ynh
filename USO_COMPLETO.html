@@ -116,6 +116,8 @@
               
                 <li><a href="LICENCIAS.html" >Licencias</a></li>
               
+                <li><a href="ESCRITORIO_LICENCIAS.html" >Fuentes del escritorio</a></li>
+              
                 <li><a href="SUSCRIPCIONES.html" >Activación comercial</a></li>
               </ul>
             
@@ -532,7 +534,7 @@ npm ci
 npm test
 npm run pack:all
 </code></pre>
-<p>El empaquetador genera Windows x64 y Linux x64 en <code>src/desktop/dist</code> y actualiza <code>bin/Gateway-Tray</code> y <code>bin/linux/Gateway-Tray</code>. Necesita descargar dependencias/Electron. Las pruebas visuales en <code>src/tools/gui-linux-check</code> requieren una sesión gráfica Linux; no forman parte de una ejecución CI sin escritorio. Para regenerar el fixture documental usado por la prueba visual, ejecuta:</p>
+<p>El empaquetador genera Windows x64 y Linux x64 en <code>src/desktop/dist</code> y actualiza <code>bin/Gateway-Tray</code> y <code>bin/linux/Gateway-Tray</code>. Necesita Python 3.11 o posterior y descarga dependencias/Electron y los fuentes correspondientes del runtime (unos 4,5 GB, reutilizados desde una caché fuera de Git). Cada escritorio incluye esos fuentes y avisos en <code>legal/</code>; el publicador verifica su integridad antes de generar una entrega. Consulta <a href="ESCRITORIO_LICENCIAS.html">fuentes y licencias de escritorio</a>. Las pruebas visuales en <code>src/tools/gui-linux-check</code> requieren una sesión gráfica Linux; no forman parte de una ejecución CI sin escritorio. Para regenerar el fixture documental usado por la prueba visual, ejecuta:</p>
 <pre tabindex="0"><code class="language-bash">HGW_REFERENCE_EXPORT=/tmp/hgw-reference-catalog.json go -C src test ./internal/admin -run TestReferenceMatchesRegisteredRoutes -count=1
 src/desktop/node_modules/electron/dist/electron src/tools/gui-linux-check/panel.cjs
 </code></pre>
@@ -684,7 +686,7 @@ de ejecución y las credenciales.</p>
 <h2 id="límites-y-licencia">Límites y licencia</h2>
 <p>No se implementa administración remota automática por confiar una CA, descubrimiento irrestricto de toda la zona DNS, instalación remota de CA en clientes, CRL/OCSP de certificados emitidos ni restauración automática de la configuración completa del VPS Headscale. Los límites de tamaño, puertos y caducidad del catálogo están en la guía de federación.</p>
 <p>Las pruebas del helper privilegiado y el recorrido con un segundo Gateway real siguen siendo comprobaciones separadas. Una compilación correcta para Windows/macOS no equivale a ejecutar allí esta revisión.</p>
-<p><strong>Código propio reservado para uso autorizado comercialmente</strong>, según <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/LICENSE">LICENSE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. El cumplimiento de fuentes/licencias del runtime Electron tiene tareas pendientes antes de su redistribución comercial, detalladas en <a href="LICENCIAS.html">LICENCIAS.md</a>.</p>
+<p><strong>Código propio bajo AGPL-3.0-only</strong>, según <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/LICENSE">LICENSE</a> y <a href="https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/NOTICE">NOTICE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. Los paquetes de escritorio incorporan los fuentes y avisos del runtime descritos en <a href="LICENCIAS.html">LICENCIAS.md</a>; conserva la carpeta <code>legal/</code> al redistribuirlos.</p>
 <p>Documentación complementaria: <a href="ARQUITECTURA.html">arquitectura</a>, <a href="PRUEBAS.html">pruebas</a>, <a href="CA-FEDERACION.html">CA y federación</a>, <a href="PORTAL_Y_FEDERACION.html">portal</a>, <a href="HELPER_CA.html">helper</a> e <a href="IDIOMAS_Y_REGISTROS.html">idiomas</a>.</p>
 <h2 id="estructura-y-entregas">Estructura y entregas</h2>
 <p>El mapa vigente está en <a href="ESTRUCTURA.html">ESTRUCTURA.md</a>. El motor, el panel y
