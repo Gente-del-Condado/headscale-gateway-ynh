@@ -151,6 +151,24 @@ de Home Assistant.</p>
 <p>Recorrido recomendado: instalar → abrir el panel → configurar Headscale y DNS →
 publicar un servicio de prueba → guardar una copia. No necesitas configurar
 primero la integración de sensores para completar este recorrido.</p>
+<h2 id="instalar-desde-mis-app">Instalar desde Mis-app</h2>
+<ol>
+<li>Abre <strong>Ajustes → Aplicaciones → Tienda de aplicaciones</strong> con una cuenta
+   administradora de Home Assistant.</li>
+<li>En el menú de la tienda, abre <strong>Repositorios</strong> y añade
+   <code>https://github.com/Gente-del-Condado/Mis-app</code>.</li>
+<li>Actualiza la lista de la tienda, selecciona <strong>Headscale Gateway</strong> e instálalo.</li>
+<li>Elige un <code>node_name</code> estable en su configuración, inicia la aplicación y
+   pulsa <strong>Abrir interfaz web</strong>. Introduce los datos de Headscale y DNS en el panel.</li>
+</ol>
+<p>Mis-app recibe el complemento desde el repositorio principal después de pasar
+las comprobaciones de seguridad. Las actualizaciones se instalan desde la ficha
+de la aplicación, conservando <code>/data/gateway/</code>. Guarda una copia comprobada
+antes de actualizar. El enlace de información de la ficha abre este manual público.</p>
+<p>La integración opcional de entidades se publica por separado en
+<a href="https://github.com/Gente-del-Condado/Mis-component">Mis-component</a>; sigue
+<a href="https://gente-del-condado.github.io/headscale-gateway-ha/INTEGRACION_HA.html">su guía</a>
+cuando el Gateway ya esté funcionando.</p>
 <h2 id="abrir-el-panel-desde-home-assistant">Abrir el panel desde Home Assistant</h2>
 <p>Desde la aplicación móvil o la web de Home Assistant, entra en <strong>Ajustes →
 Aplicaciones/Complementos → Headscale Gateway → Abrir interfaz web</strong>. Activa
@@ -364,6 +382,8 @@ instrucciones de compilación. Los avisos de terceros se conservan en <code>noti
       <nav aria-label="En esta página"><p>En esta página</p><ul>
         
           <li><a href="#qué-vas-a-instalar">Qué vas a instalar</a></li>
+        
+          <li><a href="#instalar-desde-mis-app">Instalar desde Mis-app</a></li>
         
           <li><a href="#abrir-el-panel-desde-home-assistant">Abrir el panel desde Home Assistant</a></li>
         
