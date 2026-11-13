@@ -33,8 +33,11 @@ def main():
         if secret is not None and not re.fullmatch(r'[0-9a-f]{64}', secret):
             raise ValueError('El secreto existente del proxy no es válido')
     secret = secret or secrets.token_hex(32)
+    # Los sufijos multiinstancia de YunoHost usan «__2». El motor exige el
+    # nombre ya normalizado y no admite guiones consecutivos al arrancar.
+    node_name = re.sub(r'[_-]+', '-', args.app)
     prepare(args.data_dir, args.install_dir, '127.0.0.1:' + args.port,
-            node_name=args.app.replace('_', '-'), lan_listen_addr='127.0.0.1:' + args.lan_port,
+            node_name=node_name, lan_listen_addr='127.0.0.1:' + args.lan_port,
             base_path=base, trusted_proxies=['127.0.0.1', '::1'], allow_frame=True,
             username=args.admin, password=sys.stdin.read() if args.admin else None,
             credentials_dir=Path(args.data_dir),

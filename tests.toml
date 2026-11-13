@@ -1,8 +1,28 @@
 test_format = 1.0
 
 [default]
+# La imagen appci puede incluir solo package_checker; la sesión administradora
+# necesita un usuario SSO real. Esta preparación se ejecuta únicamente en CI.
+preinstall = """
+if ! yunohost user info ciadmin >/dev/null 2>&1; then
+    yunohost user create ciadmin --fullname="CI admin" --domain="$DOMAIN" --password="$YUNO_PWD"
+fi
+yunohost user group add admins ciadmin
+"""
 args.path = "/gateway"
+args.init_main_permission = "admins"
 
-[root]
-only = ["install.root"]
-args.path = "/"
+[default.curl_tests]
+admin.path = "/admin/"
+admin.logged_on_sso = true
+admin.logged_as_admin = true
+admin.expect_return_code = 200
+admin.expect_content = "Headscale Gateway"
+
+# El HTML no acredita una sesión. Consultar la API protegida sin volcar
+# /auth/session, cuya respuesta incluye un token CSRF.
+status.path = "/api/v1/status"
+status.logged_on_sso = true
+status.logged_as_admin = true
+status.expect_return_code = 200
+status.expect_content = '"version"\s*:'

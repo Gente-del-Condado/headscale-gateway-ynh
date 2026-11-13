@@ -38,6 +38,14 @@ hgw_register_service() {
     yunohost service add "$app" --description="Gateway HTTPS privado para Headscale" --log="$data_dir/gateway/logs/gateway.log"
 }
 
+hgw_restore_startup_permissions() {
+    # YunoHost puede normalizar permisos al recuperar el directorio instalado.
+    # Este archivo contiene el secreto del proxy y el motor solo admite 0600.
+    [[ -f "$install_dir/startup.json" && ! -L "$install_dir/startup.json" ]] || ynh_die "La configuración de arranque restaurada no es un archivo normal"
+    chmod 0600 "$install_dir/startup.json"
+    chown --no-dereference "$app:$app" "$install_dir/startup.json"
+}
+
 hgw_install_logo() {
     local logo="${1:-../doc/logo.png}" current_logo default_logo
     current_logo="$(yunohost user permission info "$app.main" --output-as json --quiet |

@@ -1,14 +1,17 @@
 packaging_format = 2
 id = "headscale_gateway"
 name = "Headscale Gateway"
-description.en = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
+description.en = "Private HTTPS access to services through Headscale, with DNS and certificate management"
 description.es = "Gateway HTTPS privado con tsnet, DNS, certificados y administración"
-version = "1.4.6~ynh3"
-maintainers = ["gentedelcondado"]
+version = "1.4.7~ynh1"
+maintainers = ["Gente-del-Condado"]
 
 [upstream]
 license = "AGPL-3.0-only"
-code = "https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway"
+code = "https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source"
+website = "https://gente-del-condado.github.io/headscale-gateway_ynh/"
+admindoc = "https://gente-del-condado.github.io/headscale-gateway_ynh/YUNOHOST.html"
+userdoc = "https://gente-del-condado.github.io/headscale-gateway_ynh/PRIMEROS_PASOS.html"
 
 [integration]
 yunohost = ">= 12.1.17"
@@ -17,7 +20,7 @@ architectures = ["amd64", "arm64"]
 multi_instance = true
 ldap = false
 sso = true
-disk = "300M"
+disk = "500M"
 ram.build = "100M"
 ram.runtime = "256M"
 

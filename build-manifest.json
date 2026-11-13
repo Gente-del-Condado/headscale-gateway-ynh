@@ -1,5 +1,5 @@
 {
-  "version": "1.4.6",
+  "version": "1.4.7",
   "commercial": false,
   "sources": {
     "acme_backoff.go": "0e972f49be4a267c0cedd63ff5785aae9f30ee2068ce09d506988303203b1e1e",
@@ -141,7 +141,7 @@
     "internal/forgejostore/store.go": "8b980c5a9fa18dce2dec68cb0afc8eb475cf0fb1f628648af23e9350d0f74206",
     "internal/i18n/formatted.go": "7c01fdd5126a859eb5440ac4c6eb77215062d9508c9d066a04756a813ab910ac",
     "internal/i18n/i18n.go": "70315dcf32d0ed24c95356bcd073d456c182fe6d13a216c91e2c83cee57a03a1",
-    "internal/i18n/locales/en.json": "df3891597a8ccffc7fb18027f048bc32dc0a1f370441bb550bc53fa347a54fda",
+    "internal/i18n/locales/en.json": "c7c7a6c69a08003ecf1d57dfd1fb33b84d79f33027c77c82595603480d559a44",
     "internal/i18n/locales/es.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
     "internal/licensing/disabled.go": "160f1664a599cb9148d4c9acf637ca00cc429bda310fd97a0ed242db1077c81e",
     "internal/licensing/enabled.go": "90f36e1d69a176cd2ad61c8162288b397b59214a33abcdfab406128f99439e1b",
@@ -198,7 +198,7 @@
     "go.sum": "243a47992a6759d7d2a2751e872d120e5fcf557f93c57215b4cfc9372c5cceba",
     "LICENSE": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
     "NOTICE": "862eb30d74cc77ac6c72dfbd7abd887fd43700a096a07253625fa7c2a9572d1f",
-    "VERSION": "563d5c80c54e77e2f8454ecd5c14388f9ab3af77edc73b6f4736ada64527952c",
+    "VERSION": "794d9bfd2d064be2041cba080923b3e39ba3bec84c35794780482852b5f4007e",
     "SOURCE.md": "c4eb212df2f0ed195adfd4387ab7dce9d92055b2ca4e3426817da48011c5f96a",
     "vendor/filippo.io/edwards25519/LICENSE": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
     "vendor/filippo.io/edwards25519/README.md": "39760d8b144d127d4b3be241cf93f7c12fbc1d0b6d3ac4e2da8f0ba68a3b1532",
@@ -5782,7 +5782,7 @@
     "vendor/tailscale.com/wgengine/wglog/wglog.go": "e670e28878ec8b5805c97ac8559f6c60c533b08cf94c252b66b556f0a180f595"
   },
   "binaries": {
-    "headscale-gateway-linux-amd64": "ce875b551bb0b5bf93104a8508c29fa5d5c0acce615b5516dd61d24b0de3c924",
-    "headscale-gateway-linux-arm64": "85ddf97c606f412838f8c9e9b00b1ced221489085989b7a7f5b1b693e9093624"
+    "headscale-gateway-linux-amd64": "7e5db76c9cb4c19eb0dc6cd57690198f16319ff9760bad30d02d8e81f156bf0c",
+    "headscale-gateway-linux-arm64": "ee2ac23550eebca08b1e83c204744d364b904160067a4af76139d1606539a596"
   }
 }

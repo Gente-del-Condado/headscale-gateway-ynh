@@ -7,6 +7,7 @@ hgw_check_sso
 hgw_install_logo ../settings/doc/logo.png
 
 ynh_restore "$install_dir"
+hgw_restore_startup_permissions
 previous=""
 if [[ -d "$data_dir/gateway" ]]; then
     previous="$data_dir/gateway.before-yunohost-restore-$(date -u +%Y%m%dT%H%M%SZ)"

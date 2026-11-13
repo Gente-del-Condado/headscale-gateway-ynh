@@ -12,7 +12,9 @@ sin otra contraseña del Gateway. Se requiere SSOwat 12.1.1 o posterior y que el
 sistema pueda consultar ese grupo mediante NSS. El instalador comprueba ambos
 requisitos.
 
-El proyecto conserva su licencia de uso propia.
+El código propio es software libre bajo AGPL-3.0-only. El paquete incluye sus
+fuentes completos, dependencias y avisos de terceros.
 
-El paquete sigue en fase experimental. Si vas a actualizar una instancia,
+La incorporación al catálogo oficial requiere revisión y pruebas de YunoHost.
+Si vas a actualizar una instancia,
 conserva la copia de seguridad de YunoHost y los datos del Gateway.
