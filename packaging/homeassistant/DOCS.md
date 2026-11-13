@@ -17,6 +17,26 @@ Recorrido recomendado: instalar → abrir el panel → configurar Headscale y DN
 publicar un servicio de prueba → guardar una copia. No necesitas configurar
 primero la integración de sensores para completar este recorrido.
 
+## Instalar desde Mis-app
+
+1. Abre **Ajustes → Aplicaciones → Tienda de aplicaciones** con una cuenta
+   administradora de Home Assistant.
+2. En el menú de la tienda, abre **Repositorios** y añade
+   `https://github.com/Gente-del-Condado/Mis-app`.
+3. Actualiza la lista de la tienda, selecciona **Headscale Gateway** e instálalo.
+4. Elige un `node_name` estable en su configuración, inicia la aplicación y
+   pulsa **Abrir interfaz web**. Introduce los datos de Headscale y DNS en el panel.
+
+Mis-app recibe el complemento desde el repositorio principal después de pasar
+las comprobaciones de seguridad. Las actualizaciones se instalan desde la ficha
+de la aplicación, conservando `/data/gateway/`. Guarda una copia comprobada
+antes de actualizar. El enlace de información de la ficha abre este manual público.
+
+La integración opcional de entidades se publica por separado en
+[Mis-component](https://github.com/Gente-del-Condado/Mis-component); sigue
+[su guía](https://gente-del-condado.github.io/headscale-gateway-ha/INTEGRACION_HA.html)
+cuando el Gateway ya esté funcionando.
+
 ## Abrir el panel desde Home Assistant
 
 Desde la aplicación móvil o la web de Home Assistant, entra en **Ajustes →

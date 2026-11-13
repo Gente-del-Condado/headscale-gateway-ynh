@@ -19,9 +19,32 @@ de credenciales. Una prueba utiliza el cliente HTTP real contra una API local
 controlada para verificar caída, recuperación y reautenticación automática
 tras un 401, conservando los identificadores de las entidades.
 
-El procedimiento reproducible está en `docs/PLATAFORMAS.md` del repositorio.
+El procedimiento reproducible está en la
+[guía de pruebas de plataformas](https://gente-del-condado.github.io/headscale-gateway-ha/PLATAFORMAS.html).
 La prueba de Core no sustituye la comprobación de Ingress o de la VPN en tu
 equipo Home Assistant OS. La instalación privada desde Forgejo se conserva.
+
+## Instalar la integración desde Mis-component
+
+[Mis-component](https://github.com/Gente-del-Condado/Mis-component) es un
+catálogo público con varias integraciones. Descarga su ZIP desde **Code →
+Download ZIP**, extráelo y copia la carpeta
+`custom_components/headscale_gateway/` a
+`/config/custom_components/headscale_gateway/` en Home Assistant, mediante
+Samba, tu editor de archivos o SSH. Reinicia Home Assistant y sigue
+**Primera conexión paso a paso** de esta guía.
+
+Para actualizar, descarga de nuevo el catálogo y sustituye esa misma carpeta,
+conservando la configuración de Home Assistant. Reinicia después de la copia.
+Los enlaces de documentación y de incidencias de la integración son públicos.
+
+Marketplace y HACS esperan una integración por repositorio; Marketplace toma
+la primera carpeta de `custom_components/`. Por eso Mis-component se utiliza
+aquí mediante copia selectiva, conservando las otras integraciones del catálogo.
+La [estructura oficial](https://contributors.home-assistant.io/marketplace/reference/repository-structure/)
+explica este límite. La exportación individual descrita más abajo prepara la
+estructura para un repositorio dedicado; no se presenta el catálogo múltiple
+como una integración admitida en Marketplace.
 
 ## Instalar desde Forgejo privado
 
@@ -46,21 +69,23 @@ Repite la copia después de `git pull --ff-only` y reinicia Home Assistant para
 actualizarla. Los sensores se configuran desde **Dispositivos y servicios**;
 no es necesario instalar HACS en Home Assistant 2026.11 o posterior.
 
-## Distribución mediante Marketplace
+## Publicación automática de la integración
 
 El repositorio conserva `hacs.json` y `custom_components/`. Sin embargo,
 Marketplace rechaza repositorios que contienen aplicaciones de Home Assistant
 OS: no añadas el repositorio principal, que también incluye `addons/`.
 
 La exportación `hacs/` de `tools/package_platforms.py` contiene únicamente la
-integración y sus archivos de distribución. Si se decide publicarla, esa carpeta
-debe ser la raíz de un repositorio público de GitHub, con sus metadatos y
-validaciones de publicación revisados. Se genera desde las mismas fuentes;
-no exige otra implementación ni otra rama funcional. El complemento continúa
-distribuyéndose como aplicación. El proyecto privado no está publicado ni
-validado en el catálogo de Marketplace.
+integración y sus archivos de distribución. La publicación en Mis-component
+utiliza esa estructura y se sincroniza desde el código principal tras las
+comprobaciones de seguridad. No mantiene otra implementación funcional.
+El complemento que ejecuta el servidor se distribuye como aplicación en Mis-app.
+El repositorio principal conserva el desarrollo privado y los fuentes públicos
+de la entrega se publican en la rama `upstream-source` del paquete YunoHost.
+La carpeta exportada `hacs/` contiene una única integración, README y
+`hacs.json`, y puede servir de raíz para una publicación independiente futura.
 
-Fuentes oficiales consultadas el 4 de noviembre de 2026:
+Fuentes oficiales consultadas el 13 de noviembre de 2026:
 [transición de HACS a Marketplace](https://github.com/hacs/integration/issues/5590),
 [funcionamiento de Marketplace](https://contributors.home-assistant.io/marketplace/how-it-works/)
 y [estructura de repositorios](https://contributors.home-assistant.io/marketplace/reference/repository-structure/).

@@ -27,8 +27,8 @@ class ReleaseTest(unittest.TestCase):
                 body = self.rfile.read(int(self.headers['Content-Length']))
                 observed.append((self.path, self.headers['Authorization'], body))
                 answer = json.dumps({'name': 'artifact.zip', 'size': len(payload),
-                    'type': 'attachment', 'browser_download_url':
-                    'https://gentedelcondado.es/forgejo/'+module.REPOSITORY+'/releases/attachments/fixture'}).encode()
+                    'type': 'attachment', 'uuid': '00112233-4455-6677-8899-aabbccddeeff',
+                    'browser_download_url': 'https://gentedelcondado.es/forgejo/attachments/00112233-4455-6677-8899-aabbccddeeff'}).encode()
                 self.send_response(201); self.send_header('Content-Length', str(len(answer)))
                 self.end_headers(); self.wfile.write(answer)
             def do_GET(self):
@@ -56,7 +56,7 @@ class ReleaseTest(unittest.TestCase):
                 self.assertEqual(observed[0][0], module.API+'/releases/4/assets')
                 self.assertIn(payload, observed[0][2])
                 self.assertTrue(observed[0][2].endswith(b'--\r\n'))
-                self.assertEqual(observed[1][0], '/'+module.REPOSITORY+'/releases/attachments/fixture')
+                self.assertEqual(observed[1][0], '/attachments/00112233-4455-6677-8899-aabbccddeeff')
                 self.assertTrue(all(item[1] == 'Bearer fixture-token' for item in observed))
         finally:
             server.shutdown(); server.server_close(); thread.join()
@@ -120,12 +120,23 @@ class ReleaseTest(unittest.TestCase):
             self.assertFalse(any(method == 'PATCH' for method, _ in events))
 
     def test_remote_metadata_cannot_send_token_to_another_host(self):
-        expected = {'name': 'artifact.zip', 'bytes': 7}
+        expected = {'name': 'artifact.zip', 'bytes': 7,
+                    'sha256': hashlib.sha256(b'fixture').hexdigest()}
         remote = {'name': 'artifact.zip', 'size': 7, 'type': 'attachment',
+                  'uuid': '00112233-4455-6677-8899-aabbccddeeff',
                   'browser_download_url': 'https://example.invalid/collect-token'}
         with patch.object(module.http.client, 'HTTPConnection') as connect:
+            response = connect.return_value.getresponse.return_value
+            response.status = 200
+            response.read.side_effect = [b'fixture', b'']
+            module.Forgejo('fixture-token').verify(remote, expected)
+            connect.assert_called_once_with('127.0.0.1', 6000, timeout=300)
+            connect.return_value.request.assert_called_once_with('GET',
+                '/attachments/00112233-4455-6677-8899-aabbccddeeff',
+                headers={'Authorization': 'Bearer fixture-token'})
+        with patch.object(module.http.client, 'HTTPConnection') as connect:
             with self.assertRaises(ValueError):
-                module.Forgejo('fixture-token').verify(remote, expected)
+                module.Forgejo('fixture-token').verify(dict(remote, uuid='../../collect'), expected)
             connect.assert_not_called()
 
 

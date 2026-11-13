@@ -2,7 +2,7 @@ name: Headscale Gateway
 version: 1.4.7
 slug: headscale_gateway
 description: Gateway HTTPS privado con VPN, DNS, certificados y panel de administración
-url: https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/docs/INSTALACION_PRIVADA.md
+url: https://gente-del-condado.github.io/headscale-gateway-ha/HOME_ASSISTANT.html
 arch:
   - amd64
   - aarch64

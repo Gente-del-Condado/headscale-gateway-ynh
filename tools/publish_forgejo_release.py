@@ -15,7 +15,7 @@ import re
 import secrets
 import stat
 import subprocess
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote
 
 REPOSITORY = 'wolfbelmi88/headscale-gateway'
 API = '/api/v1/repos/' + REPOSITORY
@@ -115,12 +115,13 @@ class Forgejo:
     def verify(self, remote, expected):
         if remote.get('name') != expected['name'] or remote.get('size') != expected['bytes'] or remote.get('type') != 'attachment':
             raise ValueError('Los metadatos del adjunto remoto no coinciden')
-        # La URL pública solo aporta una ruta. Nunca se envía el token a un
-        # servidor indicado por la respuesta ni se siguen redirecciones.
-        url = urlsplit(remote['browser_download_url'])
-        path = url.path.removeprefix('/forgejo')
-        if url.query or url.fragment or not path.startswith('/' + REPOSITORY + '/releases/'):
-            raise ValueError('Ruta de descarga inesperada')
+        # La API de Forgejo usa /attachments/UUID, sin el prefijo del repo.
+        # El UUID procede del adjunto consultado en esta release. No se utiliza
+        # browser_download_url ni se sigue una dirección externa de la respuesta.
+        uuid = remote.get('uuid', '')
+        if not re.fullmatch(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', uuid):
+            raise ValueError('Identificador de adjunto inesperado')
+        path = '/attachments/' + uuid
         connection = http.client.HTTPConnection('127.0.0.1', 6000, timeout=300)
         try:
             connection.request('GET', path, headers={'Authorization': 'Bearer ' + self.token})
