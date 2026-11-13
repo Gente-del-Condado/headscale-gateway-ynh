@@ -1,0 +1,2 @@
+const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('gateway',{hide:()=>ipcRenderer.invoke('hide'),view:preferences=>ipcRenderer.invoke('view',preferences),language:code=>ipcRenderer.invoke('language',code),testNotification:()=>ipcRenderer.invoke('test-notification'),snapshot:()=>ipcRenderer.invoke('snapshot'),configure:c=>ipcRenderer.invoke('configure',c),refresh:()=>ipcRenderer.invoke('refresh'),open:()=>ipcRenderer.invoke('open-admin'),disconnect:()=>ipcRenderer.invoke('disconnect'),onState:fn=>ipcRenderer.on('state',(_e,s)=>fn(s))});

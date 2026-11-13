@@ -1,0 +1,22 @@
+{
+  "format": "headscale-gateway-acl-templates",
+  "version": 1,
+  "templates": [
+    {
+      "id": "acceso-web-servidores",
+      "name": "Acceso web a nodos con etiqueta servidor",
+      "category": "Servicios",
+      "description": "Los equipos personales pueden abrir HTTP y HTTPS en los equipos etiquetados tag:servidor.",
+      "warning": "Es necesario configurar propietarios de tag:servidor y etiquetar los nodos deseados. Otros puertos quedarán bloqueados si no hay más reglas.",
+      "policy": "{\n  \"grants\": [\n    {\"src\": [\"autogroup:member\"], \"dst\": [\"tag:servidor\"], \"ip\": [\"80\", \"443\"]}\n  ]\n}"
+    },
+    {
+      "id": "equipos-propios-ssh",
+      "name": "Cada usuario: sus dispositivos y SSH",
+      "category": "Usuarios",
+      "description": "Autoriza únicamente el acceso de cada usuario a sus propios dispositivos y añade permiso de red SSH al puerto 22.",
+      "warning": "Una regla de red para el puerto 22 NO configura Tailscale SSH. Revisa las reglas SSH y la versión de Headscale antes de aplicarla.",
+      "policy": "{\n  \"grants\": [\n    {\"src\": [\"autogroup:member\"], \"dst\": [\"autogroup:self\"], \"ip\": [\"*\"]}\n  ]\n}"
+    }
+  ]
+}

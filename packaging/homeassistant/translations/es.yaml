@@ -1,0 +1,15 @@
+configuration:
+  admin_username:
+    name: Administrador inicial
+    description: Cuenta opcional para el acceso directo. Dentro de Home Assistant se usa tu sesión de administrador.
+  admin_password:
+    name: Contraseña inicial
+    description: Opcional, entre 12 y 72 bytes. No se necesita para Ingress. No restablece cuentas existentes.
+  node_name:
+    name: Nombre estable del nodo
+    description: No lo cambies después de conectar el nodo a Headscale.
+  lan_port:
+    name: Puerto HTTPS LAN inicial
+    description: Después de configurar el Gateway, cambia el puerto desde su panel.
+  log_level:
+    name: Nivel de registro

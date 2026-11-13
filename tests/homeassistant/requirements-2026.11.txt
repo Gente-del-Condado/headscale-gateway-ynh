@@ -1,0 +1,4 @@
+homeassistant==2026.11.0
+# Official test helpers from the exact 2026.11.0 release; PyPI still has an
+# unrelated legacy package with this name. Fetch the pinned source archive.
+pytest-homeassistant @ https://github.com/home-assistant/core/archive/74cf5a49c63ed8d4d87717844bf14f79c28c9cea.tar.gz#subdirectory=packages/pytest-homeassistant

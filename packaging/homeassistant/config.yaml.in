@@ -1,0 +1,34 @@
+name: Headscale Gateway
+version: 1.4.7
+slug: headscale_gateway
+description: Gateway HTTPS privado con VPN, DNS, certificados y panel de administración
+url: https://gentedelcondado.es/forgejo/wolfbelmi88/headscale-gateway/src/branch/main/docs/INSTALACION_PRIVADA.md
+arch:
+  - amd64
+  - aarch64
+startup: services
+boot: auto
+init: true
+host_network: true
+ingress: true
+ingress_port: 0
+ingress_entry: admin/
+ingress_stream: true
+panel_icon: mdi:shield-lock
+panel_title: Headscale Gateway
+panel_admin: true
+hassio_api: true
+hassio_role: default
+backup: cold
+timeout: 30
+stage: stable
+options:
+  admin_username: admin
+  node_name: homeassistant-gateway
+  lan_port: 8443
+schema:
+  admin_username: str
+  admin_password: password?
+  node_name: match(^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$)
+  lan_port: port
+  log_level: list(info|debug|trace|warn|error)?

@@ -1,0 +1,118 @@
+PRUEBA DE FEDERACIÓN WINDOWS 11 → LINUX
+
+Objetivo
+Mostrar en el portal de Linux un servicio compartido por otro Gateway Windows.
+No se clonan identidades, bases de datos ni claves privadas entre los equipos.
+Los nombres siguientes son ejemplos: sustituye win-gateway.intra.example.net
+por el dominio principal que muestre tu Gateway Windows.
+
+1. Preparar Windows
+- Extrae la distribución nueva en una carpeta estable, por ejemplo C:\Gateway.
+- Si ya tienes un Gateway Windows, detenlo y sustituye el ejecutable conservando
+  sus datos. Si es nuevo, utiliza un directorio nuevo y una identidad nueva.
+- Desde PowerShell, para la estructura del proyecto con bin/:
+  .\bin\headscale-gateway.exe --db C:\GatewayDatos\gateway.sqlite
+  En el paquete reducido el ejecutable está en la raíz: .\headscale-gateway.exe.
+- Abre http://127.0.0.1:9091/admin/ en Windows y completa el acceso local.
+- Configura dominio base, Headscale y proveedor DNS; usa el mismo dominio base
+  de la red pero otro nombre de nodo. Una clave REST Headscale no es una clave
+  de registro del nodo: completa el login de tsnet y la autorización en Headscale.
+- Activa el inventario si quieres descubrir candidatos mediante Headscale.
+- Revisa el modo HTTPS de administración. No abras el puerto HTTP 9091 a la LAN.
+
+2. Publicar un servicio de prueba
+- Utiliza un servicio que ya funcione en Windows, con un puerto conocido.
+- Si tienes Python, una alternativa aislada es una carpeta vacía con index.html:
+  py -m http.server 18080 --bind 127.0.0.1 --directory C:\GatewayPrueba
+  No utilices una carpeta que contenga tus documentos o claves.
+- Crea en Gateway → Servicios un servicio llamado prueba-win con destino
+  http://127.0.0.1:18080 (o el puerto real de tu servicio).
+- Confirma que https://prueba-win.win-gateway.intra.example.net/ responde.
+- Revisa DNS, TLS y ACL antes de seguir. Usa :8443 solo si accedes al listener LAN.
+
+3. Compartir desde Windows
+- Gateway → Portal privado:
+  activa Mostrar portal principal y Publicar catálogo para otros gateways.
+- En prueba-win, marca Visible y Compartir; guarda.
+- Elige Solo CA local si quieres probar de forma explícita certificados con CA
+  propia. No cambies una instalación ACME existente solo por esta prueba.
+- En Sistema → CA y confianza descarga el certificado público de la autoridad
+  local que corresponda. No copies ca.key, master.key ni claves de servidor.
+- Anota su huella SHA-256 y compruébala visualmente en el equipo Windows.
+- Publicar la CA pública es independiente del catálogo. Actívalo únicamente si
+  también quieres probar la sincronización de CA; no es necesario para importar
+  manualmente su certificado público.
+
+4. Descargar y aprobar la confianza en Linux
+- En Windows activa Publicar solamente el certificado público de mi CA, en
+  Sistema → CA y confianza. Para Tailnet debe permitirse el acceso HTTPS privado;
+  para la alternativa LAN, el modo de exposición debe permitir también LAN.
+- En Linux pulsa Descubrir y descargar CA pendientes en CA y confianza.
+- Se intentará Tailnet:443 antes de LAN:8443. La descarga no aprueba la CA.
+- Compara su huella con Windows y usa Verificar y aprobar en la fila pendiente.
+- La importación por archivo siguiente sigue disponible como alternativa:
+- Copia únicamente el archivo CA público .crt/.pem a Linux por un canal conocido.
+- Sistema → CA y confianza → Federación:
+  nombre: Gateway Windows de pruebas;
+  origen HTTPS: https://win-gateway.intra.example.net
+  (NO admin.win-gateway..., NO /admin/, NO dirección del servicio prueba-win).
+- Selecciona el certificado y pulsa Registrar CA pendiente.
+- Comprueba que la huella coincide con la que leíste directamente en Windows.
+- Pulsa Verificar y aprobar y completa la confirmación.
+- No hace falta pulsar Instalar en SO para que el cliente del catálogo confíe en
+  ese peer. La aprobación local y la instalación en el SO son acciones distintas.
+- Si los portales usan certificados ACME, el cliente valida las raíces del SO;
+  el registro del Gateway aprobado sigue siendo necesario para seleccionar sus
+  servicios. La CA pública local registrada identifica la relación de confianza.
+
+5. Probar la API antes de añadir enlaces
+- En Linux, Gateway → Portal privado: activa Mostrar servicios de gateways
+  aprobados y guarda.
+- Sistema → API / CLI: pulsa Actualizar índice para cargar la lista de peers.
+- En Destino elige Gateway Windows de pruebas. El probador fija GET y la ruta
+  /.well-known/headscale-gateway; no solicita un token del otro Gateway.
+- Pulsa Ejecutar. Debe devolver HTTP 200 y un catálogo con protocolo
+  headscale-gateway, versión 1 y el servicio prueba-win.
+- 404: revisa publicación, versión y portal principal. Error TLS: revisa nombre,
+  resolución, fecha y CA. Error de conexión: revisa ACL/listener/puerto.
+- Aprobar una CA no permite usar la API administrativa remota. Para administrar
+  Windows utiliza su panel y su propia sesión.
+
+6. Seleccionar y comprobar
+- Vuelve a Gateway → Portal privado en Linux y pulsa Actualizar catálogos.
+- Marca prueba-win del Gateway Windows y guarda.
+- Abre el portal principal Linux y filtra por Gateway Windows.
+- El enlace debe conservar el dominio del servicio Windows, no el de Linux.
+- Ábrelo desde un cliente permitido por las ACL. Con CA local, ese navegador
+  también necesita confiar en la CA Windows; el servidor Linux no instala esa
+  confianza automáticamente en los visitantes.
+- Desmarca el servicio remoto en Linux y guarda: desaparece el enlace, pero no
+  se elimina el servicio de Windows. Vuelve a seleccionarlo si quieres conservarlo.
+
+7. Descubrimiento opcional
+- Primero verifica la federación manual anterior.
+- Activa descubrimiento en el receptor y, para anunciar por LAN, publicación y
+  descubrimiento en el emisor. Guarda antes de pulsar Buscar gateways.
+- LAN requiere UDP 47991 y HTTPS del listener elegido, normalmente TCP 8443,
+  permitidos en el perfil privado del firewall. El programa no abre reglas.
+- Tailnet necesita permisos ACL para el nodo tsnet y el listener HTTPS 443.
+- El candidato tiene que ser el portal principal. Descubrirlo no importa su CA
+  ni concede aprobación. La zona DNS completa no se enumera.
+- Si DNS lleva el nombre a una IP Tailnet, Gateway utiliza 443 para ese destino,
+  incluso si el origen guardado indicaba 8443. La alternativa LAN necesita una
+  IP LAN conocida por descubrimiento o inventario; el nombre DNS por sí solo
+  no aporta una dirección LAN si únicamente resuelve a Tailnet.
+
+8. Fallos y revocación (solo con el nodo de pruebas)
+- Detén Windows temporalmente. Al fallar la siguiente actualización desaparecen
+  sus enlaces remotos; una caché de más de tres minutos tampoco se muestra.
+- Arráncalo de nuevo: los enlaces seleccionados vuelven tras actualizar.
+- Retira el peer del almacén de confianza Linux: no deben mostrarse sus servicios.
+  Para volver a usarlo repite la importación, comprobación y aprobación.
+- No cambies ACL de equipos habituales ni pruebes el helper privilegiado durante
+  esta secuencia: son verificaciones independientes.
+
+Resultados a anotar
+Windows: versión del binario, URL principal y protocolo del catálogo.
+Linux: HTTP del probador, servicio seleccionado, apertura desde cliente autorizado,
+retirada del enlace, recuperación y revocación. Nunca pegues tokens ni claves.

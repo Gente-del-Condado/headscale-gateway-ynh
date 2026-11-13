@@ -1,0 +1,53 @@
+HELPER OPCIONAL PARA CA — 25/10/2026
+
+Qué hace
+Ejecutable de una sola operación: instalar o retirar una CA pública del almacén
+GLOBAL del equipo donde corre el Gateway. El Gateway sigue sin privilegios.
+No recibe claves privadas, rutas de destino ni órdenes arbitrarias. Revalida
+un único certificado raíz autofirmado y su huella SHA-256 antes de actuar.
+No es un servicio ni utiliza setuid, sudoers sin contraseña o contraseñas guardadas.
+
+Instalación portable
+Linux: bin/linux/hgw-ca-helper ya acompaña a bin/linux/headscale-gateway.
+Al instalar el Gateway en otra carpeta, copia ambos ejecutables juntos.
+Linux requiere /usr/bin/pkexec, polkit y un agente de autenticación de escritorio.
+Windows: bin/hgw-ca-helper.exe debe acompañar a headscale-gateway.exe. Cada
+operación usa UAC mediante PowerShell del sistema. Puede indicar editor desconocido:
+los binarios no están firmados con un certificado de distribución.
+macOS: elige ambos binarios de la misma arquitectura en bin/macos-amd64 o bin/macos-arm64. Copia el
+Gateway como headscale-gateway y su helper como hgw-ca-helper en la misma carpeta,
+y dales permiso de ejecución. El nombre final del helper no lleva -arm64/-amd64.
+macOS utiliza osascript y solicita administrador para System.keychain. Estos
+binarios no están firmados ni notarizados; la compilación no verifica Gatekeeper.
+
+Activar o desactivar
+Sistema → CA y confianza → Helper de certificados del sistema.
+Comprueba «Helper disponible», marca «Usar helper con autorización del sistema»
+y pulsa Guardar preferencia del helper. Requiere sesión administrativa y CSRF.
+La preferencia se guarda en SQLite; no hace falta reiniciar.
+Desmarcar y guardar deja de invocar el helper. No retira CA ya instaladas.
+Para quitar el helper, desactívalo y elimina SOLO su ejecutable.
+
+Uso
+Instalar/retirar CA sigue requiriendo la confirmación de huella en el panel.
+Con el helper activo aparecerá, además, la autorización del SO en el equipo
+DEL GATEWAY. No aparece en el navegador de un equipo remoto.
+Usa únicamente los ejecutables que has compilado/verificado: estás autorizando
+su ejecución como administrador. No hay aprobación automática en segundo plano.
+El helper no es adecuado para un servicio sin sesión interactiva (Windows
+Session 0, servidor Linux sin agente polkit o macOS sin sesión gráfica). En ese
+caso desactívalo y sigue el procedimiento manual como administrador.
+
+La eliminación de CA local conserva el orden actual: borrar del Gateway primero,
+intentar retirada del SO después. Cancelar UAC/polkit/macOS no deshace el borrado
+local. Se conserva la CA PÚBLICA en pki/removed-public-ca para retirada manual.
+La clave privada no se envía al helper ni se guarda en esa copia pública.
+Si la autorización tarda demasiado, el panel puede indicar tiempo agotado;
+comprueba el almacén antes de repetir (un proceso elevado puede seguir terminando).
+
+Validación de esta entrega
+Validación de entradas, huella, límites, rechazo de datos ajenos, permisos de
+sesión/CSRF y desactivación probados automáticamente sin cambiar la confianza.
+Compilaciones destinadas a Linux, Windows y macOS. La elevación real y la retirada
+real del almacén siguen pendientes en cada SO. No se han instalado CA de prueba
+ni activado el helper en la configuración productiva durante el desarrollo.

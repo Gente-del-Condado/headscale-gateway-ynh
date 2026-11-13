@@ -1,0 +1,83 @@
+# Los textos viven en docs/ y en los README/DOCS de cada plataforma.
+# tools/manual_hooks.py incorpora esas fuentes sin mantener copias manuales.
+site_name: Headscale Gateway
+# Pages proporciona su URL real; en local todos los enlaces siguen siendo relativos.
+site_url: !ENV [HGW_DOCS_URL, ""]
+site_description: Manual de instalación, administración y desarrollo de Headscale Gateway.
+repo_url: https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source
+repo_name: Fuentes públicos
+extra:
+  source_browser: https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/
+edit_uri: ''
+docs_dir: docs
+site_dir: builds/manual
+use_directory_urls: false
+strict: true
+theme:
+  name: null
+  custom_dir: tools/manual_theme
+  static_templates:
+    - 404.html
+plugins: []
+hooks:
+  - tools/manual_hooks.py
+markdown_extensions:
+  - toc:
+      permalink: false
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode
+  - tables
+  - fenced_code
+  - attr_list
+  - md_in_html
+validation:
+  nav:
+    omitted_files: info
+  links:
+    not_found: warn
+    unrecognized_links: warn
+    anchors: warn
+nav:
+  - Inicio: index.md
+  - Empezar:
+      - Primeros pasos: PRIMEROS_PASOS.md
+      - Manual de uso: USO_COMPLETO.md
+      - Ejemplos completos: EJEMPLOS.md
+      - Capturas del panel: CAPTURAS.md
+  - Instalar:
+      - Home Assistant: HOME_ASSISTANT.md
+      - Entidades en Home Assistant: INTEGRACION_HA.md
+      - YunoHost: YUNOHOST.md
+      - Android: ANDROID_USO.md
+      - Privacidad Android: PRIVACIDAD_ANDROID.md
+      - Canales Android: ANDROID_CANALES.md
+      - Acceso al Git privado: INSTALACION_PRIVADA.md
+      - Plataformas y contratos: PLATAFORMAS.md
+  - Administrar:
+      - Red, puertos y CA: RED_Y_CA_LAN.md
+      - Confianza y federación: CA-FEDERACION.md
+      - Recuperar el acceso: RECUPERAR_ACCESO.md
+      - Resolver problemas: SOLUCION_PROBLEMAS.md
+  - Desarrollar:
+      - Estructura del proyecto: ESTRUCTURA.md
+      - Arquitectura y flujos: ARQUITECTURA.md
+      - Guía de contribución: DESARROLLO.md
+      - Continuar con otra IA: CONTINUIDAD.md
+      - Publicar en F-Droid: ANDROID_FDROID.md
+      - Preparar Google Play: ANDROID_PLAY.md
+      - Catálogo YunoHost: CATALOGO_YUNOHOST.md
+      - Editar y publicar el manual: MANUAL_WEB.md
+      - Git y entregas: MIGRACION_REPOSITORIO.md
+      - Pruebas: PRUEBAS.md
+  - Referencia:
+      - Modelos de la API: MODELOS_API.md
+      - Guía API y CLI: API_CLI.md
+      - Portal y federación: PORTAL_Y_FEDERACION.md
+      - Helper de certificados: HELPER_CA.md
+      - Idiomas y registros: IDIOMAS_Y_REGISTROS.md
+      - Android por dentro: ANDROID.md
+      - Prueba entre Windows y Linux: FEDERACION_WINDOWS.md
+      - Paquetes de ejecutables: LEEME_BINARIOS.md
+      - Validación y límites: VERIFICACION_FINAL.md
+      - Licencias: LICENCIAS.md
+      - Fuentes del escritorio: ESCRITORIO_LICENCIAS.md
+      - Activación comercial: SUSCRIPCIONES.md

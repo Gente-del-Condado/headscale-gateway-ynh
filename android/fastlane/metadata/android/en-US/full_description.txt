@@ -1,0 +1,7 @@
+Run a node on your own Headscale network, publish private HTTPS services and manage DNS, certificates and encrypted backups through the shared administration panel.
+
+Optionally connect phone applications using VpnService. Private network traffic is encrypted between nodes. Internet uses the normal connection unless you configure an exit node. Android allows one active VPN per profile.
+
+Requires your own Headscale server. No commercial VPN service or anonymity guarantee. No advertising or analytics. Android may suspend background processes; this does not replace a permanent server.
+
+Export an encrypted backup before changing distribution channels or signing identities.

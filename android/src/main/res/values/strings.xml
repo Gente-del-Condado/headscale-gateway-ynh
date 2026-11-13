@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Headscale Gateway</string>
+    <string name="start">Iniciar Gateway</string>
+    <string name="stop">Detener todo</string>
+    <string name="vpn_start">Conectar aplicaciones a la VPN</string>
+    <string name="vpn_stop">Desconectar aplicaciones de la VPN</string>
+    <string name="opening">Preparando el panel…</string>
+    <string name="stopped">Gateway detenido. Inícialo para configurar Headscale y publicar servicios.</string>
+    <string name="active">Gateway activo</string>
+    <string name="connected">VPN conectada · servicios: %1$d</string>
+    <string name="pending">Configura Headscale en el panel para conectar la VPN.</string>
+    <string name="error">No se puede continuar: %1$s</string>
+    <string name="vpn_pending">Inicia Gateway y conecta su nodo a Headscale antes de activar la VPN del teléfono.</string>
+    <string name="channel">Estado del Gateway</string>
+    <string name="notification">VPN privada, panel y servicios HTTPS</string>
+    <string name="vpn_active">Aplicaciones conectadas a la VPN privada</string>
+    <string name="vpn_revoked">Android ha retirado el permiso de VPN.</string>
+    <string name="panel_login">Acceso al panel</string>
+    <string name="panel_login_info">Las credenciales del panel han cambiado. Accede con tu cuenta desde el panel.</string>
+    <string name="file_choose">Seleccionar archivo</string>
+    <string name="licenses">Avisos de terceros</string>
+    <string name="access_data">Datos de acceso inicial</string>
+    <string name="access_info">Usuario: android\nContraseña inicial: %1$s\n\nSi la has cambiado desde el panel, utiliza tu contraseña actual.</string>
+    <string name="accept">Aceptar</string>
+    <string name="vpn_explanation">La conexión del Gateway publica los servicios. El botón VPN conecta además las aplicaciones del teléfono a tu red privada.</string>
+    <string name="private_dns_warning">El DNS privado estricto puede impedir que Android resuelva los nombres de tu VPN. Revisa ese ajuste si puedes conectar por IP pero no por nombre.</string>
+    <string name="private_dns_settings">Revisar DNS privado de Android</string>
+</resources>

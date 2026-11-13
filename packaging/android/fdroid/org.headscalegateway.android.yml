@@ -1,0 +1,46 @@
+Categories:
+  - Connectivity
+License: AGPL-3.0-only
+AuthorName: Gente del Condado
+WebSite: https://gente-del-condado.github.io/headscale-gateway_ynh/
+SourceCode: https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source
+IssueTracker: https://github.com/Gente-del-Condado/headscale-gateway_ynh/issues
+
+Name: Headscale Gateway
+Summary: Private Headscale services and an optional phone VPN
+Description: |-
+  Run a Headscale node, publish private HTTPS services and manage DNS,
+  certificates and encrypted backups using the shared Go engine.
+  Optionally connect phone applications to your own private network.
+  Requires a Headscale server. Does not provide a commercial VPN service.
+
+RepoType: git
+Repo: https://github.com/Gente-del-Condado/headscale-gateway_ynh.git
+
+Builds:
+  - versionName: 1.4.7
+    versionCode: 10040074
+    commit: source-v1.4.7
+    subdir: android
+    gradle:
+      - yes
+    build:
+      - curl -fLo /tmp/hgw-go.tar.gz https://go.dev/dl/go1.27.4.linux-amd64.tar.gz
+      - echo '7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840  /tmp/hgw-go.tar.gz'
+        | sha256sum -c -
+      - mkdir -p ../builds/fdroid-toolchain
+      - tar -xzf /tmp/hgw-go.tar.gz -C ../builds/fdroid-toolchain
+      - export PATH="$PWD/../builds/fdroid-toolchain/go/bin:$PATH"
+      - export GOTOOLCHAIN=local
+      - python3 ../tools/build_android_apk.py --release --channel fdroid --prepare-only
+        --sdk $$SDK$$ --ndk $$NDK$$
+    buildjni:
+      - no
+    ndk: 27.0.12077973
+    gradleprops:
+      - releaseChannel=fdroid
+
+AutoUpdateMode: None
+UpdateCheckMode: None
+CurrentVersion: 1.4.7
+CurrentVersionCode: 10040074

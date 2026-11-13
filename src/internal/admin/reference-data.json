@@ -1,0 +1,1568 @@
+{
+  "contracts": {
+    "GET /api/v1/backups": {
+      "source": "src/internal/admin/backups.go",
+      "line": 385,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/backups\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tentries, e := b.listLocked()\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\t_, keyErr := securebackup.ReadKey(b.keyPath())\n\t\treply(w, 200, map[string]any{\"items\": entries, \"settings\": b.settings, \"encryption_ready\": keyErr == nil}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/backups/restore/status": {
+      "source": "src/internal/admin/backups.go",
+      "line": 397,
+      "fields": [
+        "detail",
+        "job",
+        "phase",
+        "updated_at"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/backups/restore/status\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\t// Guarda el estado en el padre de data_dir: la restauración sustituye data_dir,\n\t\t// pero conserva el último resultado para que pueda consultarlo el navegador.\n\t\tpath := filepath.Join(filepath.Dir(filepath.Dir(s.backups.root())), \".hgw-restore-status.json\")\n\t\traw, e := os.ReadFile(path)\n\t\tif os.IsNotExist(e) {\n\t\t\treply(w, 200, map[string]any{\"phase\": \"idle\"}, nil)\n\t\t\treturn\n\t\t}\n\t\tif e != nil || len(raw) > 8192 {\n\t\t\tproblem(w, 500, \"estado de restauración no disponible\")\n\t\t\treturn\n\t\t}\n\t\tvar result struct {\n\t\t\tJob     string `json:\"job\"`\n\t\t\tPhase   string `json:\"phase\"`\n\t\t\tDetail  string `json:\"detail\"`\n\t\t\tUpdated string `json:\"updated_at\"`\n\t\t}\n\t\tif json.Unmarshal(raw, &result) != nil {\n\t\t\tproblem(w, 500, \"estado inválido\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups/encryption": {
+      "source": "src/internal/admin/backups.go",
+      "line": 422,
+      "fields": [
+        "password"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups/encryption\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tif _, e := os.Stat(b.keyPath()); e == nil {\n\t\t\tproblem(w, 409, \"la contraseña ya está configurada; no se puede sobrescribir sin migrar las copias\")\n\t\t\treturn\n\t\t} else if !os.IsNotExist(e) {\n\t\t\tproblem(w, 500, \"no se pudo comprobar clave\")\n\t\t\treturn\n\t\t}\n\t\tif e := securebackup.NewKey(b.keyPath(), body.Password); e != nil {\n\t\t\tproblem(w, 400, e.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"configured\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "PUT /api/v1/backups/schedule": {
+      "source": "src/internal/admin/backups.go",
+      "line": 445,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/backups/schedule\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar p backupSettings\n\t\tif !decode(w, r, &p) {\n\t\t\treturn\n\t\t}\n\t\tif e := validBackupSettings(p); e != nil {\n\t\t\tproblem(w, 400, e.Error())\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tif p.IntervalHours > 0 {\n\t\t\tif _, e := securebackup.ReadKey(b.keyPath()); e != nil {\n\t\t\t\tproblem(w, 409, \"configura primero la contraseña de copias\")\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tp.LastUTC = b.settings.LastUTC\n\t\tif e := s.database.PutJSON(backupSettingsKey, p); e != nil {\n\t\t\tproblem(w, 500, \"no se guardó programación\")\n\t\t\treturn\n\t\t}\n\t\tb.settings = p\n\t\treply(w, 200, p, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups": {
+      "source": "src/internal/admin/backups.go",
+      "line": 471,
+      "fields": [
+        "components",
+        "password"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword   string           `json:\"password\"`\n\t\t\tComponents backupComponents `json:\"components\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Password == \"\" {\n\t\t\tproblem(w, 400, \"contraseña requerida para crear copia manual\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\titem, e := b.createLocked(r.Context(), body.Components, body.Password)\n\t\tif e != nil {\n\t\t\tproblem(w, 400, e.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 201, item, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/backups/{id}/download": {
+      "source": "src/internal/admin/backups.go",
+      "line": 493,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/backups/{id}/download\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tif err := setBackupTransferDeadlines(w, false); err != nil {\n\t\t\tproblem(w, http.StatusInternalServerError, \"No se pudo ampliar el plazo de transferencia de la copia\")\n\t\t\treturn\n\t\t}\n\t\tif e := s.backups.archive(w, r.PathValue(\"id\")); e != nil {\n\t\t\tproblem(w, 404, \"copia no encontrada\")\n\t\t}\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "DELETE /api/v1/backups/{id}": {
+      "source": "src/internal/admin/backups.go",
+      "line": 502,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/backups/{id}\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tid := r.PathValue(\"id\")\n\t\tif _, e := b.entry(id); e != nil {\n\t\t\tproblem(w, 404, \"copia inexistente\")\n\t\t\treturn\n\t\t}\n\t\tif e := os.Remove(filepath.Join(b.root(), id+\".hgw\")); e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\t_ = os.Remove(filepath.Join(b.root(), id+\".json\"))\n\t\treply(w, 200, map[string]any{\"deleted\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups/import": {
+      "source": "src/internal/admin/backups.go",
+      "line": 518,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups/import\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\t// Recibe en flujo una copia .hgw cifrada desde el equipo del administrador.\n\t\t// Nunca acepta ni guarda contenido sin cifrar como copia de seguridad.\n\t\tif err := setBackupTransferDeadlines(w, true); err != nil {\n\t\t\tproblem(w, http.StatusInternalServerError, \"No se pudo ampliar el plazo de transferencia de la copia\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tif err := secureBackupRoot(b.root()); err != nil {\n\t\t\tproblem(w, 500, err.Error())\n\t\t\treturn\n\t\t}\n\t\tr.Body = http.MaxBytesReader(w, r.Body, 50<<30)\n\t\tmr, err := r.MultipartReader()\n\t\tif err != nil {\n\t\t\tproblem(w, 400, \"subida multipart inválida\")\n\t\t\treturn\n\t\t}\n\t\tvar password string\n\t\tvar saved string\n\t\tdefer func() {\n\t\t\tif saved != \"\" {\n\t\t\t\t_ = os.Remove(saved)\n\t\t\t}\n\t\t}()\n\t\tfor {\n\t\t\tpart, e := mr.NextPart()\n\t\t\tif e == io.EOF {\n\t\t\t\tbreak\n\t\t\t}\n\t\t\tif e != nil {\n\t\t\t\tproblem(w, 400, \"subida incompleta\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tswitch part.FormName() {\n\t\t\tcase \"password\":\n\t\t\t\traw, e := io.ReadAll(io.LimitReader(part, 4096))\n\t\t\t\tif e != nil {\n\t\t\t\t\tproblem(w, 400, \"contraseña ilegible\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tpassword = string(raw)\n\t\t\tcase \"archive\":\n\t\t\t\tif saved != \"\" {\n\t\t\t\t\tproblem(w, 400, \"solo un archivo permitido\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tf, e := os.CreateTemp(b.root(), \".uploaded-*.hgw\")\n\t\t\t\tif e != nil {\n\t\t\t\t\tproblem(w, 500, \"sin espacio para la subida\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tsaved = f.Name()\n\t\t\t\t_ = f.Chmod(0600)\n\t\t\t\t_, e = io.Copy(f, part)\n\t\t\t\tif e == nil {\n\t\t\t\t\te = f.Sync()\n\t\t\t\t}\n\t\t\t\tif ce := f.Close(); e == nil {\n\t\t\t\t\te = ce\n\t\t\t\t}\n\t\t\t\tif e != nil {\n\t\t\t\t\tproblem(w, 400, \"archivo incompleto\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\tdefault:\n\t\t\t\tproblem(w, 400, \"campo no permitido\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\t_ = part.Close()\n\t\t}\n\t\tb.importArchiveLocked(w, r, saved, password)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups/{id}/restore-acl": {
+      "source": "src/internal/admin/backups.go",
+      "line": 593,
+      "fields": [
+        "confirm",
+        "missing",
+        "password",
+        "policy"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups/{id}/restore-acl\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t\tConfirm  string `json:\"confirm\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Password == \"\" || body.Confirm != \"RESTAURAR ACL\" {\n\t\t\tproblem(w, 400, \"contraseña y confirmación explícita necesarias\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\titem, e := b.entry(r.PathValue(\"id\"))\n\t\tif e != nil || !item.Components.ACL && !item.Components.Full {\n\t\t\tproblem(w, 404, \"copia sin ACL disponible\")\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(HeadscalePolicyDNSController)\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"controlador ACL no disponible\")\n\t\t\treturn\n\t\t}\n\t\tstage, e := os.MkdirTemp(b.root(), \".acl-verify-\")\n\t\tif e != nil {\n\t\t\tproblem(w, 500, \"no se pudo preparar verificación\")\n\t\t\treturn\n\t\t}\n\t\tdefer os.RemoveAll(stage)\n\t\t_, e = securebackup.Extract(r.Context(), filepath.Join(b.root(), item.ID+\".hgw\"), body.Password, stage)\n\t\tif e != nil {\n\t\t\tproblem(w, 400, \"copia o contraseña inválida\")\n\t\t\treturn\n\t\t}\n\t\tvar snapshot struct {\n\t\t\tPolicy  string `json:\"policy\"`\n\t\t\tMissing bool   `json:\"missing\"`\n\t\t}\n\t\traw, e := os.ReadFile(filepath.Join(stage, \"remote\", \"headscale-acl.json\"))\n\t\tif e != nil || json.Unmarshal(raw, &snapshot) != nil || snapshot.Missing || snapshot.Policy == \"\" {\n\t\t\tproblem(w, 409, \"la instantánea no contiene una política ACL restaurable\")\n\t\t\treturn\n\t\t}\n\t\tcurrent, e := ctl.HeadscaleGetPolicy(r.Context())\n\t\tif e != nil {\n\t\t\tproblem(w, 502, \"no se pudo leer la ACL actual: \"+e.Error())\n\t\t\treturn\n\t\t}\n\t\t_, e = ctl.HeadscaleSetPolicy(r.Context(), snapshot.Policy, current.Revision)\n\t\tif e != nil {\n\t\t\tproblem(w, 409, \"Headscale rechazó la restauración ACL: \"+e.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-ACL-RESTORE\", \"política restaurada explícitamente desde %s\", item.ID)\n\t\treply(w, 200, map[string]any{\"restored\": true, \"component\": \"acl\"}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups/{id}/dns-export": {
+      "source": "src/internal/admin/backups.go",
+      "line": 651,
+      "fields": [
+        "password"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups/{id}/dns-export\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Password == \"\" {\n\t\t\tproblem(w, 400, \"contraseña necesaria\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\titem, e := b.entry(r.PathValue(\"id\"))\n\t\tif e != nil || !item.Components.DNS && !item.Components.Full {\n\t\t\tproblem(w, 404, \"copia sin registros DNS\")\n\t\t\treturn\n\t\t}\n\t\tstage, e := os.MkdirTemp(b.root(), \".dns-verify-\")\n\t\tif e != nil {\n\t\t\tproblem(w, 500, \"no se pudo preparar verificación\")\n\t\t\treturn\n\t\t}\n\t\tdefer os.RemoveAll(stage)\n\t\t_, e = securebackup.Extract(r.Context(), filepath.Join(b.root(), item.ID+\".hgw\"), body.Password, stage)\n\t\tif e != nil {\n\t\t\tproblem(w, 400, \"copia o contraseña inválida\")\n\t\t\treturn\n\t\t}\n\t\traw, e := os.ReadFile(filepath.Join(stage, \"remote\", \"magicdns-export.json\"))\n\t\tif e != nil {\n\t\t\tproblem(w, 409, \"no hay instantánea DNS\")\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Type\", \"application/json; charset=utf-8\")\n\t\tw.Header().Set(\"Content-Disposition\", `attachment; filename=\"magicdns-extra-records.json\"`)\n\t\tw.Header().Set(\"X-Content-Type-Options\", \"nosniff\")\n\t\t_, _ = w.Write(raw)\n\t}))\n\t// Prepara y valida desde el panel; sustituye los datos al reejecutar el proceso,\n\t// cuando ni tsnet ni SQLite están en marcha.",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/backups/{id}/restore": {
+      "source": "src/internal/admin/backups.go",
+      "line": 693,
+      "fields": [
+        "confirm",
+        "password"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/backups/{id}/restore\", onlyAdmin(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t\tConfirm  string `json:\"confirm\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Confirm != \"RESTAURAR\" || body.Password == \"\" {\n\t\t\tproblem(w, 400, \"confirmación y contraseña obligatorias\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tid := r.PathValue(\"id\")\n\t\titem, e := b.entry(id)\n\t\tif e != nil {\n\t\t\tproblem(w, 404, \"copia inexistente\")\n\t\t\treturn\n\t\t}\n\t\tif !item.Components.SQLite && !item.Components.Identity && !item.Components.Full {\n\t\t\tproblem(w, 409, \"esta copia solo contiene datos remotos; no se restaura automáticamente en Headscale\")\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tScheduleBackupRestore(context.Context, string, string) (string, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"restauración integrada no disponible en este sistema\")\n\t\t\treturn\n\t\t}\n\t\tjob, e := ctl.ScheduleBackupRestore(r.Context(), filepath.Join(b.root(), id+\".hgw\"), body.Password)\n\t\tif e != nil {\n\t\t\tproblem(w, 409, e.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-RESTORE-STAGED\", \"copia=%s job=%s\", id, job)\n\t\treply(w, 202, map[string]any{\"restarting\": true, \"job\": job}, nil)\n\t}))\n}\n\n// importArchiveLocked valida y registra una copia recibida en un archivo temporal privado.\n// El llamante mantiene el bloqueo de copias y elimina el temporal al terminar.\nfunc (b *backupManager) importArchiveLocked(w http.ResponseWriter, r *http.Request, saved, password string) {\n\tif saved == \"\" || password == \"\" {\n\t\tproblem(w, 400, \"archivo y contraseña requeridos\")\n\t\treturn\n\t}\n\tstage, e := os.MkdirTemp(b.root(), \".verify-\")\n\tif e != nil {\n\t\tproblem(w, 500, \"no se pudo crear verificación\")\n\t\treturn\n\t}\n\tdefer os.RemoveAll(stage)\n\tmanifest, e := securebackup.Extract(r.Context(), saved, password, stage)\n\tif e != nil {\n\t\tproblem(w, 400, \"no se pudo verificar integridad/contraseña: \"+e.Error())\n\t\treturn\n\t}\n\tcomponents := backupComponents{}\n\tfor name := range manifest.Files {\n\t\tswitch {\n\t\tcase name == \"data/gateway.sqlite\":\n\t\t\tcomponents.SQLite = true\n\t\tcase name == \"remote/headscale-acl.json\":\n\t\t\tcomponents.ACL = true\n\t\tcase name == \"remote/magicdns-export.json\":\n\t\t\tcomponents.DNS = true\n\t\tcase strings.HasPrefix(name, \"data/tailscale-state-\") || strings.HasPrefix(name, \"data/identity/\"):\n\t\t\tcomponents.Identity = true\n\t\t}\n\t}\n\tcomponents.Full = manifest.Mode == \"all\"\n\tif !components.valid() {\n\t\tproblem(w, 400, \"copia no contiene componentes reconocidos\")\n\t\treturn\n\t}\n\tvar suffix [4]byte\n\tif _, e = rand.Read(suffix[:]); e != nil {\n\t\tproblem(w, 500, \"error aleatorio\")\n\t\treturn\n\t}\n\tid := \"backup-\" + time.Now().UTC().Format(\"20060102T150405.000000000Z\") + \"-\" + hex.EncodeToString(suffix[:])\n\tfile, e := os.Open(saved)\n\tif e != nil {\n\t\tproblem(w, 500, \"error de archivo\")\n\t\treturn\n\t}\n\thash := sha256.New()\n\t_, e = io.Copy(hash, file)\n\tfile.Close()\n\tif e != nil {\n\t\tproblem(w, 500, \"error SHA-256\")\n\t\treturn\n\t}\n\tstat, e := os.Stat(saved)\n\tif e != nil {\n\t\tproblem(w, 500, \"error de archivo\")\n\t\treturn\n\t}\n\titem := backupEntry{ID: id, CreatedAt: manifest.Created, Components: components, ACL: map[bool]string{true: \"included\", false: \"not_requested\"}[components.ACL], MagicDNS: map[bool]string{true: \"generated_export\", false: \"not_requested\"}[components.DNS], Bytes: stat.Size(), SHA256: hex.EncodeToString(hash.Sum(nil)), Encrypted: true}\n\tdest := filepath.Join(b.root(), id+\".hgw\")\n\tif e = os.Rename(saved, dest); e != nil {\n\t\tproblem(w, 500, \"no se guardó archivo\")\n\t\treturn\n\t}\n\tif e = writePrivateJSON(filepath.Join(b.root(), id+\".json\"), item); e != nil {\n\t\t_ = os.Remove(dest)\n\t\tproblem(w, 500, \"no se guardaron metadatos\")\n\t\treturn\n\t}\n\tif e = b.pruneLocked(); e != nil {\n\t\tdiagnostics.Emit(\"admin\", diagnostics.Warn, \"HGW-BACKUP-RETENTION\", \"retención: %v\", e)\n\t}\n\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-BACKUP-IMPORT\", \"archivo cifrado=%s\", id)\n\treply(w, 201, item, nil)\n}",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/reference": {
+      "source": "src/internal/admin/reference.go",
+      "line": 80,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/reference\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tdata, _ := referenceData.ReadFile(\"reference-data.json\")\n\t\tvar extra map[string]any\n\t\t_ = json.Unmarshal(data, &extra)\n\t\trows := append([]referenceEntry(nil), mux.entries...)\n\t\trows = append(rows, referenceEntry{Method: \"GET\", Path: \"/.well-known/headscale-gateway\", Group: \"federation\", Auth: \"public_opt_in\", Source: \"portal_runtime.go\", Roles: []string{}})\n\t\tsort.Slice(rows, func(i, j int) bool {\n\t\t\tif rows[i].Path == rows[j].Path {\n\t\t\t\treturn rows[i].Method < rows[j].Method\n\t\t\t}\n\t\t\treturn rows[i].Path < rows[j].Path\n\t\t})\n\t\textra[\"routes\"] = rows\n\t\treply(w, 200, extra, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/reference/peer/{fingerprint}": {
+      "source": "src/internal/admin/reference.go",
+      "line": 95,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/reference/peer/{fingerprint}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tPortalProbe(context.Context, string) (any, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"portal no disponible\")\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.PortalProbe(r.Context(), r.PathValue(\"fingerprint\"))\n\t\tif err != nil {\n\t\t\tproblem(w, 409, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))\n}",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/config/transfer/export": {
+      "source": "src/internal/admin/routes_config_transfer.go",
+      "line": 26,
+      "fields": [
+        "password",
+        "secrets"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/config/transfer/export\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t\tSecrets  bool   `json:\"secrets\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tcontroller, ok := s.controller.(configurationTransfer)\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"exportación no disponible\")\n\t\t\treturn\n\t\t}\n\t\tdata, err := controller.ExportConfiguration(r.Context(), body.Secrets, body.Password)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"filename\": \"headscale-gateway-config.hgwcfg\", \"data\": base64.StdEncoding.EncodeToString(data)}, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/config/transfer/import": {
+      "source": "src/internal/admin/routes_config_transfer.go",
+      "line": 46,
+      "fields": [
+        "data",
+        "password"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/config/transfer/import\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tPassword string `json:\"password\"`\n\t\t\tData     string `json:\"data\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 520<<10) {\n\t\t\treturn\n\t\t}\n\t\tdata, err := base64.StdEncoding.DecodeString(body.Data)\n\t\tif err != nil || len(data) > 320<<10 {\n\t\t\tproblem(w, 400, \"archivo cifrado inválido o demasiado grande\")\n\t\t\treturn\n\t\t}\n\t\tcontroller, ok := s.controller.(configurationTransfer)\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"importación no disponible\")\n\t\t\treturn\n\t\t}\n\t\tcount, err := controller.ImportConfiguration(r.Context(), data, body.Password)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"imported\": count, \"restart_required\": true, \"preserved_local_access\": true}, nil)\n\t}))\n}",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/diagnostics/logs/clear": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 14,
+      "fields": [
+        "confirm"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/diagnostics/logs/clear\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tConfirm string `json:\"confirm\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Confirm != \"LIMPIAR\" {\n\t\t\tproblem(w, 400, \"confirma LIMPIAR\")\n\t\t\treturn\n\t\t}\n\t\tif err := diagnostics.Clear(); err != nil {\n\t\t\tproblem(w, 500, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"cleared\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/diagnostics/logs": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 35,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/diagnostics/logs\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, diagnostics.Info(), nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/diagnostics/logs/{channel}": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 42,
+      "fields": [],
+      "query": [
+        "limit"
+      ],
+      "code": "mux.HandleFunc(\"GET /api/v1/diagnostics/logs/{channel}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\tcount, _ := strconv.Atoi(r.URL.Query().Get(\"limit\"))\n\t\tif count <= 0 {\n\t\t\tcount = 100\n\t\t}\n\t\tlines, err := diagnostics.Tail(r.PathValue(\"channel\"), count)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"channel\": r.PathValue(\"channel\"), \"lines\": lines}, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "PUT /api/v1/diagnostics/logs/settings": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 58,
+      "fields": [
+        "backups",
+        "directory",
+        "level",
+        "max_mb"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/diagnostics/logs/settings\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\tvar config struct {\n\t\t\tDirectory string `json:\"directory\"`\n\t\t\tMaxMB     int    `json:\"max_mb\"`\n\t\t\tBackups   int    `json:\"backups\"`\n\t\t\tLevel     string `json:\"level\"`\n\t\t}\n\t\tif !decode(w, r, &config) {\n\t\t\treturn\n\t\t}\n\t\tif err := diagnostics.ValidateDir(config.Directory); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\tif config.Level == \"\" {\n\t\t\tconfig.Level = \"info\"\n\t\t}\n\t\tif _, err := diagnostics.ParseLevel(config.Level); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\toriginal := diagnostics.Info()\n\t\tif err := diagnostics.Configure(config.Directory, config.MaxMB, config.Backups); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\tif err := s.database.PutJSON(\"diagnostics.logging.v1\", config); err != nil {\n\t\t\t_ = diagnostics.Configure(original.Directory, original.MaxMB, original.Backups)\n\t\t\tproblem(w, 503, err.Error())\n\t\t\treturn\n\t\t}\n\t\t_ = diagnostics.SetLevel(config.Level)\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-ADMIN-LOG-002\", \"parámetros de registro actualizados; nivel=%s\", diagnostics.EffectiveLevel().Label())\n\t\treply(w, 200, diagnostics.Info(), nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/diagnostics/logs/debug": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 101,
+      "fields": [
+        "minutes"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/diagnostics/logs/debug\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tMinutes int `json:\"minutes\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Minutes == 0 {\n\t\t\tdiagnostics.DisableTemporaryDebug()\n\t\t} else if _, err := diagnostics.EnableTemporaryDebug(body.Minutes); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-DEBUG-001\", \"depuración temporal configurada; minutos=%d\", body.Minutes)\n\t\treply(w, 200, diagnostics.Info(), nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/diagnostics/proxy/clear-idle": {
+      "source": "src/internal/admin/routes_diagnostics.go",
+      "line": 121,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/diagnostics/proxy/clear-idle\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) {\n\t\t\tproblem(w, 403, \"solo administrador\")\n\t\t\treturn\n\t\t}\n\t\tif ctl, ok := s.controller.(proxyConnectionCleaner); ok {\n\t\t\tctl.ClearProxyConnections()\n\t\t}\n\t\tdiagnostics.Emit(\"proxy\", diagnostics.InfoLevel, \"HGW-PROXY-CONN-003\", \"conexiones inactivas cerradas por administración\")\n\t\treply(w, 200, map[string]any{\"ok\": true, \"response_cache\": false}, nil)\n\t}))\n}",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/system/firewall": {
+      "source": "src/internal/admin/routes_firewall.go",
+      "line": 10,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/system/firewall\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tFirewallReport(context.Context) (firewall.Report, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"diagnóstico de cortafuegos no disponible\")\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.FirewallReport(r.Context())\n\t\treply(w, 200, result, err)\n\t}))\n}",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/forgejo/list": {
+      "source": "src/internal/admin/routes_forgejo.go",
+      "line": 39,
+      "fields": [
+        "page",
+        "repository",
+        "token"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/forgejo/list\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tforgejoCredentials\n\t\t\tPage int `json:\"page\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tstore := body.store(w)\n\t\tif store == nil {\n\t\t\treturn\n\t\t}\n\t\titems, more, err := store.List(r.Context(), body.Page)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"items\": items, \"more\": more}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/forgejo/profile/export": {
+      "source": "src/internal/admin/routes_forgejo.go",
+      "line": 59,
+      "fields": [
+        "password",
+        "repository",
+        "secrets",
+        "token"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/forgejo/profile/export\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tforgejoCredentials\n\t\t\tPassword string `json:\"password\"`\n\t\t\tSecrets  bool   `json:\"secrets\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tstore := body.store(w)\n\t\tif store == nil {\n\t\t\treturn\n\t\t}\n\t\tcontroller, ok := s.controller.(configurationTransfer)\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"exportación no disponible\")\n\t\t\treturn\n\t\t}\n\t\tdata, err := controller.ExportConfiguration(r.Context(), body.Secrets, body.Password)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\tdigest := sha256.Sum256(data)\n\t\titem, err := store.Upload(r.Context(), forgejostore.Profile, bytes.NewReader(data), int64(len(data)), hex.EncodeToString(digest[:]))\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 201, item, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/forgejo/profile/import": {
+      "source": "src/internal/admin/routes_forgejo.go",
+      "line": 91,
+      "fields": [
+        "apply",
+        "password",
+        "repository",
+        "tag",
+        "token"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/forgejo/profile/import\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tforgejoCredentials\n\t\t\tTag      string `json:\"tag\"`\n\t\t\tPassword string `json:\"password\"`\n\t\t\tApply    bool   `json:\"apply\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tstore := body.store(w)\n\t\tif store == nil {\n\t\t\treturn\n\t\t}\n\t\tcontroller, ok := s.controller.(interface {\n\t\t\tconfigurationTransfer\n\t\t\tPreviewConfiguration([]byte, string) ([]string, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"importación no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif body.Password == \"\" {\n\t\t\tproblem(w, 400, \"archivo y contraseña requeridos\")\n\t\t\treturn\n\t\t}\n\t\tvar data bytes.Buffer\n\t\tif _, err := store.Download(r.Context(), body.Tag, forgejostore.Profile, &data); err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\tif !body.Apply {\n\t\t\tkeys, err := controller.PreviewConfiguration(data.Bytes(), body.Password)\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 400, err.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, map[string]any{\"keys\": keys}, nil)\n\t\t\treturn\n\t\t}\n\t\tcount, err := controller.ImportConfiguration(r.Context(), data.Bytes(), body.Password)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"imported\": count, \"restart_required\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/forgejo/backup/export": {
+      "source": "src/internal/admin/routes_forgejo.go",
+      "line": 139,
+      "fields": [
+        "id",
+        "repository",
+        "token"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/forgejo/backup/export\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tforgejoCredentials\n\t\t\tID string `json:\"id\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tstore := body.store(w)\n\t\tif store == nil || !s.prepareForgejoBackup(w) {\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tb.mu.Lock()\n\t\tentry, err := b.entry(body.ID)\n\t\tif err != nil {\n\t\t\tb.mu.Unlock()\n\t\t\tproblem(w, 404, \"copia inexistente\")\n\t\t\treturn\n\t\t}\n\t\tfile, err := os.Open(filepath.Join(b.root(), entry.ID+\".hgw\"))\n\t\tb.mu.Unlock()\n\t\tif err != nil {\n\t\t\tproblem(w, 500, \"error de archivo\")\n\t\t\treturn\n\t\t}\n\t\tdefer file.Close()\n\t\tinfo, err := file.Stat()\n\t\tif err != nil || entry.Bytes <= 0 || entry.Bytes > forgejostore.MaxBackup || info.Size() != entry.Bytes || !securebackup.HasEncryptedHeader(file) {\n\t\t\tproblem(w, 400, \"archivo cifrado inválido\")\n\t\t\treturn\n\t\t}\n\t\tif _, err := file.Seek(0, 0); err != nil {\n\t\t\tproblem(w, 500, \"error de archivo\")\n\t\t\treturn\n\t\t}\n\t\thash := sha256.New()\n\t\tif _, err := io.Copy(hash, io.LimitReader(file, entry.Bytes+1)); err != nil || hex.EncodeToString(hash.Sum(nil)) != entry.SHA256 {\n\t\t\tproblem(w, 400, \"la copia local no coincide con su SHA-256\")\n\t\t\treturn\n\t\t}\n\t\tif _, err := file.Seek(0, 0); err != nil {\n\t\t\tproblem(w, 500, \"error de archivo\")\n\t\t\treturn\n\t\t}\n\t\titem, err := store.Upload(r.Context(), forgejostore.Backup, file, entry.Bytes, entry.SHA256)\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 201, item, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/forgejo/backup/import": {
+      "source": "src/internal/admin/routes_forgejo.go",
+      "line": 192,
+      "fields": [
+        "password",
+        "repository",
+        "tag",
+        "token"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/forgejo/backup/import\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tforgejoCredentials\n\t\t\tTag      string `json:\"tag\"`\n\t\t\tPassword string `json:\"password\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 16<<10) {\n\t\t\treturn\n\t\t}\n\t\tstore := body.store(w)\n\t\tif store == nil || !s.prepareForgejoBackup(w) {\n\t\t\treturn\n\t\t}\n\t\tif body.Password == \"\" {\n\t\t\tproblem(w, 400, \"archivo y contraseña requeridos\")\n\t\t\treturn\n\t\t}\n\t\tb := s.backups\n\t\tif err := secureBackupRoot(b.root()); err != nil {\n\t\t\tproblem(w, 500, \"no se pudo preparar el directorio de copias\")\n\t\t\treturn\n\t\t}\n\t\tfile, err := os.CreateTemp(b.root(), \".forgejo-*.hgw\")\n\t\tif err != nil {\n\t\t\tproblem(w, 500, \"sin espacio para la subida\")\n\t\t\treturn\n\t\t}\n\t\tdefer os.Remove(file.Name())\n\t\t_, err = store.Download(r.Context(), body.Tag, forgejostore.Backup, file)\n\t\tcloseErr := file.Close()\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\tif closeErr != nil {\n\t\t\tproblem(w, 500, \"archivo incompleto\")\n\t\t\treturn\n\t\t}\n\t\tb.mu.Lock()\n\t\tdefer b.mu.Unlock()\n\t\tb.importArchiveLocked(w, r, file.Name(), body.Password)\n\t}))\n}\n\nfunc (s *Server) prepareForgejoBackup(w http.ResponseWriter) bool {\n\tif s.backups == nil {\n\t\tproblem(w, 503, \"copias no disponibles\")\n\t\treturn false\n\t}\n\tif err := setBackupTransferDeadlines(w, false); err != nil {\n\t\tproblem(w, 500, \"No se pudo ampliar el plazo de transferencia de la copia\")\n\t\treturn false\n\t}\n\treturn true\n}",
+      "session": true,
+      "admin": true
+    },
+    "GET /api/v1/status": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 14,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/status\", s.secure(func(w http.ResponseWriter, r *http.Request) { s.read(w, r, s.controller.Status) }))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/services": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 15,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/services\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tv, e := s.controller.Services(r.Context())\n\t\treply(w, http.StatusOK, v, e)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/templates": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 19,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/templates\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tv, e := s.controller.Templates(r.Context())\n\t\treply(w, http.StatusOK, v, e)\n\t}))\n\t// Las plantillas son objetos de la base de datos. Sus API exigen las mismas\n\t// comprobaciones de rol y módulo que la edición de servicios.",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/templates/details": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 25,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/templates/details\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tctl, ok := s.controller.(interface {\n\t\t\tTemplateDetails(context.Context) ([]state.TemplateRecord, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"plantillas no disponibles\")\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.TemplateDetails(r.Context())\n\t\treply(w, 200, result, err)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/templates/{name}": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 36,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/templates/{name}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tctl, ok := s.controller.(interface {\n\t\t\tSaveTemplate(context.Context, state.TemplateRecord) error\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"plantillas no disponibles\")\n\t\t\treturn\n\t\t}\n\t\tvar body state.TemplateRecord\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Name != \"\" && body.Name != r.PathValue(\"name\") {\n\t\t\tproblem(w, 400, \"nombre no coincide\")\n\t\t\treturn\n\t\t}\n\t\tbody.Name = r.PathValue(\"name\")\n\t\tif err := ctl.SaveTemplate(r.Context(), body); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "DELETE /api/v1/templates/{name}": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 59,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/templates/{name}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tctl, ok := s.controller.(interface {\n\t\t\tDeleteTemplate(context.Context, string) error\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"plantillas no disponibles\")\n\t\t\treturn\n\t\t}\n\t\tif err := ctl.DeleteTemplate(r.Context(), r.PathValue(\"name\")); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/proxy/schema": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 73,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/proxy/schema\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\treply(w, http.StatusOK, ProxySchema(), nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/config": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 76,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/config\", s.secure(func(w http.ResponseWriter, r *http.Request) { s.read(w, r, s.controller.Settings) }))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/config/schema": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 77,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/config/schema\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tfields, err := s.controller.ConfigSchema(r.Context())\n\t\treply(w, http.StatusOK, fields, err)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/config": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 81,
+      "fields": [
+        "changes"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/config\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body struct {\n\t\t\tChanges map[string]string `json:\"changes\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif len(body.Changes) == 0 {\n\t\t\tproblem(w, http.StatusBadRequest, \"changes no puede estar vacío\")\n\t\t\treturn\n\t\t}\n\t\tif err := s.controller.UpdateSettings(r.Context(), body.Changes); err != nil {\n\t\t\tproblem(w, http.StatusBadRequest, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusOK, map[string]any{\"ok\": true, \"restart_required\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/services": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 98,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/services\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body Service\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif body.Name == \"\" {\n\t\t\tproblem(w, http.StatusBadRequest, \"name obligatorio\")\n\t\t\treturn\n\t\t}\n\t\tif err := s.controller.SaveService(r.Context(), body); err != nil {\n\t\t\tproblem(w, http.StatusBadRequest, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusOK, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/services/{name}": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 113,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/services/{name}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tvar body Service\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tname := r.PathValue(\"name\")\n\t\tif body.Name != \"\" && body.Name != name {\n\t\t\tproblem(w, http.StatusBadRequest, \"el nombre no coincide con la ruta\")\n\t\t\treturn\n\t\t}\n\t\tbody.Name = name\n\t\tif err := s.controller.SaveService(r.Context(), body); err != nil {\n\t\t\tproblem(w, http.StatusBadRequest, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusOK, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "DELETE /api/v1/services/{name}": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 130,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/services/{name}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif err := s.controller.DeleteService(r.Context(), r.PathValue(\"name\")); err != nil {\n\t\t\tproblem(w, http.StatusBadRequest, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusOK, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/system/restart": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 137,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/system/restart\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tcontroller, ok := s.controller.(RestartController)\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"reinicio no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif err := controller.ScheduleRestart(r.Context()); err != nil {\n\t\t\tproblem(w, http.StatusConflict, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusAccepted, map[string]any{\"ok\": true, \"restarting\": true}, nil)\n\t}))\n\t// Reintento ACME manual. El servidor respeta siempre el cooldown SQLite\n\t// y no expone ni claves privadas ni el token de Technitium/DNS.",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/certificates/refresh": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 151,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/certificates/refresh\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tctl, ok := s.controller.(interface {\n\t\t\tRefreshCertificate(context.Context) (any, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"gestión de certificados no disponible\")\n\t\t\treturn\n\t\t}\n\t\tstatus, err := ctl.RefreshCertificate(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 409, \"certificado no actualizado; consulte logs y estado ACME\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, status, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/reload": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 166,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/reload\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif err := s.controller.Reload(r.Context()); err != nil {\n\t\t\tproblem(w, http.StatusBadRequest, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, http.StatusOK, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/api/tokens": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 173,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/api/tokens\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\ttokens, err := s.database.ListTokens()\n\t\treply(w, 200, tokens, err)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/api/tokens": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 181,
+      "fields": [
+        "days",
+        "label",
+        "role",
+        "scopes"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/api/tokens\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\tvar req struct {\n\t\t\tLabel  string   `json:\"label\"`\n\t\t\tRole   string   `json:\"role\"`\n\t\t\tScopes []string `json:\"scopes\"`\n\t\t\tDays   int      `json:\"days\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tif req.Role != \"viewer\" && req.Role != \"operator\" {\n\t\t\tproblem(w, 400, \"los tokens delegados solo pueden ser viewer u operator\")\n\t\t\treturn\n\t\t}\n\t\tif req.Days < 1 || req.Days > 365 || len(req.Scopes) == 0 {\n\t\t\tproblem(w, 400, \"caducidad o scopes no válidos\")\n\t\t\treturn\n\t\t}\n\t\tpossible := map[string]bool{\"read\": true, \"services\": true, \"network\": true, \"operations\": true}\n\t\tfor _, scope := range req.Scopes {\n\t\t\tmethod := http.MethodGet\n\t\t\tif scope == \"operations\" {\n\t\t\t\tmethod = http.MethodPost\n\t\t\t}\n\t\t\tif !possible[scope] || !rolePermits(req.Role, scope, method) {\n\t\t\t\tproblem(w, 400, \"módulo no válido para el rol\")\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\ttoken, info, err := s.database.NewToken(req.Label, req.Role, req.Scopes, time.Duration(req.Days)*24*time.Hour)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 201, map[string]any{\"token\": token, \"info\": info}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "DELETE /api/v1/api/tokens/{id}": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 221,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/api/tokens/{id}\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif err := s.database.RevokeToken(r.PathValue(\"id\")); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/api/exposure": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 232,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/api/exposure\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.policy == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, s.policy.Get(), nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/api/exposure": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 239,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/api/exposure\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.policy == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\tvar next APIPolicy\n\t\tif !decode(w, r, &next) {\n\t\t\treturn\n\t\t}\n\t\t// Evita perder el acceso cuando Bearer es el único método de entrada configurado.\n\t\tif s.auth == nil || s.auth.Current().Mode == \"token\" {\n\t\t\tif !next.TokenIdentity || !next.TokenRead {\n\t\t\t\tproblem(w, 400, \"el modo token requiere mantener token_identity y token_read habilitados\")\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tif err := s.policy.Update(next); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"ok\": true, \"policy\": s.policy.Get()}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/audit": {
+      "source": "src/internal/admin/routes_gateway.go",
+      "line": 261,
+      "fields": [],
+      "query": [
+        "order",
+        "page",
+        "size",
+        "sort"
+      ],
+      "code": "mux.HandleFunc(\"GET /api/v1/audit\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\t// Compatibilidad: los clientes antiguos reciben el formato anterior de array.\n\t\tif r.URL.RawQuery == \"\" {\n\t\t\tevents, err := s.database.ListAudit(100)\n\t\t\treply(w, 200, events, err)\n\t\t\treturn\n\t\t}\n\t\tpage, _ := strconv.Atoi(r.URL.Query().Get(\"page\"))\n\t\tif page < 1 {\n\t\t\tpage = 1\n\t\t}\n\t\tif page > 100000 {\n\t\t\tpage = 100000\n\t\t}\n\t\tsize, _ := strconv.Atoi(r.URL.Query().Get(\"size\"))\n\t\tif size != 10 && size != 25 && size != 50 {\n\t\t\tsize = 10\n\t\t}\n\t\tsortBy := strings.TrimSpace(r.URL.Query().Get(\"sort\"))\n\t\torder := strings.TrimSpace(r.URL.Query().Get(\"order\"))\n\t\tevents, total, err := s.database.PageAudit(page, size, sortBy, order)\n\t\treply(w, 200, map[string]any{\"events\": events, \"total\": total, \"page\": page, \"size\": size}, err)\n\t}))\n}",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/network/disconnect": {
+      "source": "src/internal/admin/routes_gateway_prefs.go",
+      "line": 17,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/disconnect\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) || s.auth == nil || !s.auth.sessionAllowed(r) || strings.HasPrefix(r.Header.Get(\"Authorization\"), \"Bearer \") {\n\t\t\tproblem(w, 403, \"requiere sesión interactiva admin\")\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tNetworkDisconnect(context.Context) (any, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"desconexión no disponible\")\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.NetworkDisconnect(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 409, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "PUT /api/v1/network/gateway/preferences": {
+      "source": "src/internal/admin/routes_gateway_prefs.go",
+      "line": 37,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/network/gateway/preferences\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) || s.auth == nil || !s.auth.sessionAllowed(r) || strings.HasPrefix(r.Header.Get(\"Authorization\"), \"Bearer \") {\n\t\t\tproblem(w, 403, \"requiere sesión interactiva admin\")\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tGatewayPrefsChange(context.Context, GatewayPrefsRequest) (any, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"preferencias tsnet no disponibles\")\n\t\t\treturn\n\t\t}\n\t\tvar input GatewayPrefsRequest\n\t\tif !decode(w, r, &input) {\n\t\t\treturn\n\t\t}\n\t\tresponse, e := ctl.GatewayPrefsChange(r.Context(), input)\n\t\tif e != nil {\n\t\t\tproblem(w, 409, e.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, response, nil)\n\t}))\n}",
+      "session": true,
+      "admin": true
+    },
+    "GET /api/v1/network/admin/users": {
+      "source": "src/internal/admin/routes_headscale_manage.go",
+      "line": 42,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/users\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c HeadscaleManagementController) {\n\t\tdata, err := c.HeadscaleUsers(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, data, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/keys": {
+      "source": "src/internal/admin/routes_headscale_manage.go",
+      "line": 50,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/keys\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c HeadscaleManagementController) {\n\t\tdata, err := c.HeadscalePreAuthKeys(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, data, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/network/admin/action": {
+      "source": "src/internal/admin/routes_headscale_manage.go",
+      "line": 58,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/admin/action\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c HeadscaleManagementController) {\n\t\tvar action HeadscaleAction\n\t\tif !decode(w, r, &action) {\n\t\t\treturn\n\t\t}\n\t\tdata, err := c.HeadscaleManage(r.Context(), action)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, data, nil)\n\t}))\n}",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/policy": {
+      "source": "src/internal/admin/routes_headscale_policy_dns.go",
+      "line": 32,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/policy\", gate(func(w http.ResponseWriter, r *http.Request, ctl HeadscalePolicyDNSController) {\n\t\tresult, err := ctl.HeadscaleGetPolicy(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "PUT /api/v1/network/admin/policy": {
+      "source": "src/internal/admin/routes_headscale_policy_dns.go",
+      "line": 40,
+      "fields": [
+        "policy",
+        "revision"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/network/admin/policy\", gate(func(w http.ResponseWriter, r *http.Request, ctl HeadscalePolicyDNSController) {\n\t\tvar data struct {\n\t\t\tPolicy   string `json:\"policy\"`\n\t\t\tRevision string `json:\"revision\"`\n\t\t}\n\t\tif !decode(w, r, &data) {\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.HeadscaleSetPolicy(r.Context(), data.Policy, data.Revision)\n\t\tif err != nil {\n\t\t\tproblem(w, 409, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/network/admin/policy/parse": {
+      "source": "src/internal/admin/routes_headscale_policy_dns.go",
+      "line": 56,
+      "fields": [
+        "policy"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/admin/policy/parse\", gate(func(w http.ResponseWriter, r *http.Request, ctl HeadscalePolicyDNSController) {\n\t\tvar body struct {\n\t\t\tPolicy string `json:\"policy\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 100*1024+1024) {\n\t\t\treturn\n\t\t}\n\t\tparsed, err := policytemplates.Normalize(body.Policy)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, parsed, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/network/admin/dns/records": {
+      "source": "src/internal/admin/routes_headscale_policy_dns.go",
+      "line": 70,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/dns/records\", gate(func(w http.ResponseWriter, r *http.Request, ctl HeadscalePolicyDNSController) {\n\t\tresult, err := ctl.HeadscaleServiceDNS(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 409, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))\n}",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/auth/methods": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 8,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/auth/methods\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif opts, ok := r.Context().Value(httpRequestOptionsKey{}).(httpRequestOptions); ok && opts.proxyUser != \"\" {\n\t\t\treply(w, 200, map[string]any{\"mode\": \"proxy\", \"bootstrap\": false, \"token_recovery\": false}, nil)\n\t\t\treturn\n\t\t}\n\t\tif s.auth == nil {\n\t\t\treply(w, 200, map[string]any{\"mode\": \"token\", \"token_recovery\": true}, nil)\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, s.auth.Methods(), nil)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/auth/bootstrap": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 19,
+      "fields": [
+        "code"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/bootstrap\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 404, \"bootstrap no disponible\")\n\t\t\treturn\n\t\t}\n\t\tvar v struct {\n\t\t\tCode string `json:\"code\"`\n\t\t}\n\t\tif !decode(w, r, &v) {\n\t\t\treturn\n\t\t}\n\t\tif s.auth.TooManyAttempts(r.RemoteAddr) {\n\t\t\tproblem(w, 429, \"demasiados intentos\")\n\t\t\treturn\n\t\t}\n\t\ttoken, err := s.auth.RedeemBootstrap(v.Code, r)\n\t\tif err != nil {\n\t\t\tproblem(w, 403, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]string{\"token\": token}, nil)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/auth/session": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 41,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/auth/session\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\treply(w, 200, map[string]any{\"authenticated\": true, \"user\": \"token\"}, nil)\n\t\t\treturn\n\t\t}\n\t\tif _, ok := s.auth.Session(r); ok {\n\t\t\treply(w, 200, s.auth.userSession(r), nil)\n\t\t} else {\n\t\t\treply(w, 200, map[string]any{\"authenticated\": true, \"user\": \"token\"}, nil)\n\t\t}\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/auth/login": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 52,
+      "fields": [
+        "password",
+        "remember",
+        "totp",
+        "username"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/login\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 404, \"acceso interactivo no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif !sameOrigin(r) {\n\t\t\tproblem(w, 403, \"origen inválido\")\n\t\t\treturn\n\t\t}\n\t\tif s.auth.TooManyAttempts(r.RemoteAddr) {\n\t\t\tproblem(w, 429, \"demasiados intentos; prueba más tarde\")\n\t\t\treturn\n\t\t}\n\t\tvar v struct {\n\t\t\tUsername string `json:\"username\"`\n\t\t\tPassword string `json:\"password\"`\n\t\t\tTOTP     string `json:\"totp\"`\n\t\t\tRemember bool   `json:\"remember\"`\n\t\t}\n\t\tif !decode(w, r, &v) {\n\t\t\treturn\n\t\t}\n\t\tc := s.auth.Current()\n\t\tvar ok bool\n\t\tswitch c.Mode {\n\t\tcase \"local\":\n\t\t\tok = s.auth.VerifyLocal(v.Username, v.Password)\n\t\tcase \"ldap\":\n\t\t\tok = v.Username != \"\" && v.Password != \"\" // LDAP verification follows in role assignment\n\t\tdefault:\n\t\t\tproblem(w, 400, \"utiliza el token o el proveedor OIDC\")\n\t\t\treturn\n\t\t}\n\t\tif ok && c.Mode == \"local\" && !s.auth.VerifyLocalMFA(v.TOTP) {\n\t\t\tok = false\n\t\t}\n\t\tif !ok {\n\t\t\tproblem(w, 401, \"credenciales incorrectas o segundo factor inválido\")\n\t\t\treturn\n\t\t}\n\t\trole := \"admin\"\n\t\tif c.Mode == \"ldap\" {\n\t\t\tgroups, err := LDAPGroups(c.LDAP, v.Username, v.Password)\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 401, \"no se pudieron verificar grupos LDAP\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\trole = roleForGroups(c.RoleGroups, groups, c.LDAP.AllowedGroups)\n\t\t}\n\t\tif role == \"\" {\n\t\t\tproblem(w, 403, \"sin permiso asignado\")\n\t\t\treturn\n\t\t}\n\t\tcsrf, err := s.auth.CreateSessionRoleRemember(w, r, v.Username, role, v.Remember)\n\t\tif err != nil {\n\t\t\tproblem(w, 503, \"no se pudo guardar la sesión\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"authenticated\": true, \"user\": v.Username, \"csrf\": csrf}, nil)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/auth/logout": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 112,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/logout\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth != nil {\n\t\t\tif session, ok := s.auth.Session(r); ok && session.source == \"proxy\" {\n\t\t\t\tproblem(w, 403, \"La sesión se gestiona desde el sistema anfitrión.\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\ts.auth.Logout(w, r)\n\t\t}\n\t\treply(w, 200, map[string]any{\"ok\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/auth/settings": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 122,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/auth/settings\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 501, \"autenticación no configurada\")\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, s.auth.Public(), nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/auth/settings": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 129,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/auth/settings\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 501, \"autenticación no configurada\")\n\t\t\treturn\n\t\t}\n\t\tvar update AuthUpdate\n\t\tif !decode(w, r, &update) {\n\t\t\treturn\n\t\t}\n\t\tif err := s.auth.Update(update); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"ok\": true, \"reauthentication_required\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/auth/mfa/setup": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 144,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/mfa/setup\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tsess, ok := s.auth.Session(r)\n\t\tif !ok || sess.source == \"proxy\" {\n\t\t\tproblem(w, 403, \"MFA requiere sesión interactiva local\")\n\t\t\treturn\n\t\t}\n\t\tsecret, uri, err := s.auth.MFASetup(sess.user)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]string{\"secret\": secret, \"otpauth_url\": uri}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/auth/mfa/confirm": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 157,
+      "fields": [
+        "code"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/mfa/confirm\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tsess, ok := s.auth.Session(r)\n\t\tif !ok || sess.source == \"proxy\" {\n\t\t\tproblem(w, 403, \"sesión local requerida\")\n\t\t\treturn\n\t\t}\n\t\tvar req struct {\n\t\t\tCode string `json:\"code\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tif err := s.auth.MFAConfirm(sess.user, req.Code); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"enabled\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/auth/mfa/disable": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 175,
+      "fields": [
+        "code"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/mfa/disable\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tsess, ok := s.auth.Session(r)\n\t\tif !ok || sess.source == \"proxy\" {\n\t\t\tproblem(w, 403, \"sesión local requerida\")\n\t\t\treturn\n\t\t}\n\t\tvar req struct {\n\t\t\tCode string `json:\"code\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tif err := s.auth.MFADisable(sess.user, req.Code); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"enabled\": false}, nil)\n\t}))\n\n\t// Solo una sesión administrativa real (OIDC/local/LDAP y CSRF) puede rotar\n\t// la credencial de emergencia. Una clave Bearer filtrada no puede rotarse a sí misma.",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/auth/recovery/rotate": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 196,
+      "fields": [
+        "confirm"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/auth/recovery/rotate\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.isAdminRequest(r) || s.auth == nil {\n\t\t\tproblem(w, 403, \"se requiere una sesión administrativa interactiva\")\n\t\t\treturn\n\t\t}\n\t\tif _, ok := s.auth.Session(r); !ok {\n\t\t\tproblem(w, 403, \"se requiere una sesión administrativa interactiva\")\n\t\t\treturn\n\t\t}\n\t\tvar req struct {\n\t\t\tConfirm string `json:\"confirm\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tif req.Confirm != \"ROTAR\" {\n\t\t\tproblem(w, 400, \"escribe ROTAR para confirmar\")\n\t\t\treturn\n\t\t}\n\t\tsecret, err := s.rotateRecoveryToken()\n\t\tif err != nil {\n\t\t\tproblem(w, 503, \"no se pudo rotar la credencial\")\n\t\t\treturn\n\t\t}\n\t\t// El secreto completo solo se entrega en esta respuesta autenticada con no-store.\n\t\treply(w, 200, map[string]string{\"token\": secret}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "GET /admin/auth/oidc/start": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 223,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/auth/oidc/start\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 404, \"OIDC no disponible\")\n\t\t\treturn\n\t\t}\n\t\ts.beginOIDC(w, r)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "GET /admin/auth/oidc/callback": {
+      "source": "src/internal/admin/routes_identity.go",
+      "line": 230,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/auth/oidc/callback\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif s.auth == nil {\n\t\t\tproblem(w, 404, \"OIDC no disponible\")\n\t\t\treturn\n\t\t}\n\t\ts.finishOIDC(w, r)\n\t})\n\n}",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/network/info": {
+      "source": "src/internal/admin/routes_network.go",
+      "line": 34,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/info\", networkHandler(func(c NetworkController, ctx context.Context, r *http.Request, w http.ResponseWriter) (any, error) {\n\t\treturn c.NetworkInfo(ctx)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/network/nodes": {
+      "source": "src/internal/admin/routes_network.go",
+      "line": 37,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/nodes\", networkHandler(func(c NetworkController, ctx context.Context, r *http.Request, w http.ResponseWriter) (any, error) {\n\t\treturn c.NetworkNodes(ctx)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/network/ping": {
+      "source": "src/internal/admin/routes_network.go",
+      "line": 40,
+      "fields": [
+        "mode",
+        "node_id"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/ping\", networkHandler(func(c NetworkController, ctx context.Context, r *http.Request, w http.ResponseWriter) (any, error) {\n\t\tvar req struct {\n\t\t\tNodeID string `json:\"node_id\"`\n\t\t\tMode   string `json:\"mode\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn nil, ErrAlreadyReplied\n\t\t}\n\t\treturn c.NetworkPing(ctx, req.NodeID, req.Mode)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/network/login": {
+      "source": "src/internal/admin/routes_network.go",
+      "line": 50,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/login\", networkHandler(func(c NetworkController, ctx context.Context, r *http.Request, w http.ResponseWriter) (any, error) {\n\t\treturn c.NetworkLogin(ctx)\n\t}))\n\n}",
+      "session": false,
+      "admin": false
+    },
+    "GET /pki/v1/public-ca": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 163,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /pki/v1/public-ca\", func(w http.ResponseWriter, r *http.Request) {\n\t\tvar enabled bool\n\t\tif s.database == nil {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\tfound, e := s.database.GetJSON(\"pki.public_ca_enabled_v1\", &enabled)\n\t\tif e != nil || !found || !enabled {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\tca, e := s.activeRoot(r.Context())\n\t\tif e != nil {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Type\", \"application/x-pem-file\")\n\t\tw.Header().Set(\"X-HGW-CA-SHA256\", ca.Fingerprint)\n\t\t_, _ = w.Write([]byte(ca.PEM))\n\t})\n\tgate := func(fn http.HandlerFunc) http.HandlerFunc {\n\t\treturn s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\t\tif !s.isAdminRequest(r) {\n\t\t\t\tproblem(w, 403, \"reservado a administración\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tfn(w, r)\n\t\t})\n\t}",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/pki": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 192,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/pki\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\troots, e := s.localRoots(r.Context())\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tleaves, e := s.localLeafInventory()\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeers, e := store.List()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tvar public bool\n\t\tif s.database != nil {\n\t\t\t_, _ = s.database.GetJSON(\"pki.public_ca_enabled_v1\", &public)\n\t\t}\n\t\treply(w, 200, map[string]any{\"local_ca\": roots, \"issued_certificates\": leaves, \"peers\": peers, \"platform\": pki.SystemPlatform(), \"publish_public_ca\": public, \"auto_approve\": false, \"helper\": pki.HelperStatus(), \"helper_enabled\": s.helperEnabled()}, nil)\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "GET /api/v1/pki/discover": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 220,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/pki/discover\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tif ctl, ok := s.controller.(interface {\n\t\t\tPKICandidates(context.Context) (any, error)\n\t\t}); ok {\n\t\t\tresult, err := ctl.PKICandidates(r.Context())\n\t\t\treply(w, 200, result, err)\n\t\t\treturn\n\t\t}\n\t\tctx, cancel := context.WithTimeout(r.Context(), 7*time.Second)\n\t\tdefer cancel()\n\t\tlan, lanErr := pki.DiscoverLAN(ctx)\n\t\t// La API de red existente ya expone el inventario Headscale. Solo enumera\n\t\t// nodos candidatos: aparecer en él nunca implica confianza en su CA.\n\t\tvar tailnet []network.Node\n\t\tif nc, ok := s.controller.(NetworkController); ok {\n\t\t\tif result, e := nc.NetworkNodes(ctx); e == nil {\n\t\t\t\tif inventory, ok := result.(network.Inventory); ok {\n\t\t\t\t\ttailnet = inventory.Nodes\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\tif tailnet == nil {\n\t\t\ttailnet = []network.Node{}\n\t\t}\n\t\tnote := \"LAN mDNS/UDP: candidatos sin verificar. UDP 47991 requiere permiso del firewall privado y publicación HTTPS de la CA; comprueba siempre SHA-256.\"\n\t\tif lanErr != nil {\n\t\t\tnote = lanErr.Error()\n\t\t}\n\t\treply(w, 200, map[string]any{\"lan\": lan, \"tailnet_candidates\": tailnet, \"note\": note}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/discover/download": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 254,
+      "fields": [
+        "endpoint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/discover/download\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tEndpoint string `json:\"endpoint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tctl, ok := s.controller.(interface {\n\t\t\tPKIDownload(context.Context, string) (any, error)\n\t\t})\n\t\tif !ok {\n\t\t\tproblem(w, 501, \"descarga de CA no disponible\")\n\t\t\treturn\n\t\t}\n\t\tresult, err := ctl.PKIDownload(r.Context(), body.Endpoint)\n\t\treply(w, 200, result, err)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "PUT /api/v1/pki/publication": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 274,
+      "fields": [
+        "enabled"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/pki/publication\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tEnabled bool `json:\"enabled\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"SQLite no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif e := s.database.PutJSON(\"pki.public_ca_enabled_v1\", body.Enabled); e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-001\", \"publicación de CA pública: %t\", body.Enabled)\n\t\treply(w, 200, map[string]bool{\"enabled\": body.Enabled}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/peers": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 295,
+      "fields": [
+        "endpoint",
+        "name",
+        "pem"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/peers\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tName     string `json:\"name\"`\n\t\t\tPEM      string `json:\"pem\"`\n\t\t\tEndpoint string `json:\"endpoint\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &body, 80<<10) {\n\t\t\treturn\n\t\t}\n\t\tanchor, e := pki.ParseRoot([]byte(body.PEM))\n\t\tif e != nil {\n\t\t\tproblem(w, 400, e.Error())\n\t\t\treturn\n\t\t}\n\t\tif body.Endpoint != \"\" {\n\t\t\tif _, e = pki.PeerURL(body.Endpoint); e != nil {\n\t\t\t\tproblem(w, 400, e.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tif _, e = store.Get(anchor.Fingerprint); e == nil {\n\t\t\tproblem(w, 409, \"la CA ya está registrada; no se sobrescribe su autorización\")\n\t\t\treturn\n\t\t}\n\t\tif !os.IsNotExist(e) {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tanchor.Name = body.Name\n\t\tanchor.Endpoint = body.Endpoint\n\t\tanchor.Approved = false\n\t\tif e = store.Put(anchor); e != nil {\n\t\t\tproblem(w, 400, e.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-002\", \"CA pública recibida, pendiente de verificar: %s\", anchor.Fingerprint)\n\t\treply(w, 201, anchor, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/peers/{fingerprint}/approve": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 341,
+      "fields": [
+        "fingerprint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/peers/{fingerprint}/approve\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tFingerprint string `json:\"fingerprint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tif fp != body.Fingerprint {\n\t\t\tproblem(w, 400, \"compara e introduce la huella SHA-256 completa antes de aprobar\")\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer, e := store.Get(fp)\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer.Approved = true\n\t\tif e = store.Put(peer); e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-003\", \"CA aprobada: %s\", fp)\n\t\treply(w, 200, peer, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/peers/{fingerprint}/sync": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 374,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/peers/{fingerprint}/sync\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer, e := store.Get(r.PathValue(\"fingerprint\"))\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\tnext, e := s.syncPeer(r.Context(), peer)\n\t\tif e != nil {\n\t\t\tproblem(w, 409, e.Error())\n\t\t\treturn\n\t\t}\n\t\tif e = store.MarkVerified(peer.Fingerprint, peer.Endpoint, next.LastSync); e != nil {\n\t\t\tproblem(w, 409, e.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]any{\"verified\": true, \"last_sync\": next.LastSync}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/peers/{fingerprint}/install": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 399,
+      "fields": [
+        "fingerprint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/peers/{fingerprint}/install\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tFingerprint string `json:\"fingerprint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tif fp != body.Fingerprint {\n\t\t\tproblem(w, 400, \"confirma la huella SHA-256 completa\")\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer, e := store.Get(fp)\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\tif !peer.Approved {\n\t\t\tproblem(w, 403, \"CA sin aprobar\")\n\t\t\treturn\n\t\t}\n\t\tctx, cancel := context.WithTimeout(r.Context(), 50*time.Second)\n\t\tdefer cancel()\n\t\tif e = s.changeSystemCA(ctx, \"install\", peer); e != nil {\n\t\t\tproblem(w, 409, e.Error()+\". \"+pki.Instructions(peer))\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-004\", \"CA instalada en confianza del sistema: %s\", fp)\n\t\treply(w, 200, map[string]any{\"installed\": true, \"restart_recommended\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/peers/{fingerprint}/uninstall": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 437,
+      "fields": [
+        "fingerprint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/peers/{fingerprint}/uninstall\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tFingerprint string `json:\"fingerprint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tif fp != body.Fingerprint {\n\t\t\tproblem(w, 400, \"confirma la huella SHA-256 completa\")\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer, e := store.Get(fp)\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\tctx, cancel := context.WithTimeout(r.Context(), 50*time.Second)\n\t\tdefer cancel()\n\t\tif e = s.changeSystemCA(ctx, \"uninstall\", peer); e != nil {\n\t\t\tproblem(w, 409, e.Error()+\". \"+pki.RemovalInstructions(peer))\n\t\t\treturn\n\t\t}\n\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-005\", \"CA retirada del almacén del sistema: %s\", fp)\n\t\treply(w, 200, map[string]any{\"uninstalled\": true, \"restart_recommended\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "DELETE /api/v1/pki/peers/{fingerprint}": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 471,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/pki/peers/{fingerprint}\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tpeer, e := store.Get(fp)\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\t// No elimina una CA del inventario sin una decisión separada de desinstalarla\n\t\t// del SO. Si tenía confianza global, debe desinstalarse primero.\n\t\tif peer.Approved {\n\t\t\tpeer.Approved = false\n\t\t\tif e = store.Put(peer); e != nil {\n\t\t\t\tproblem(w, 500, e.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, map[string]any{\"revoked\": true, \"note\": \"La autorización se retiró. Si estaba instalada en el sistema, pulsa Retirar del SO por separado.\"}, nil)\n\t\t\treturn\n\t\t}\n\t\tif e = store.Delete(fp); e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"deleted\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "GET /api/v1/pki/peers/{fingerprint}/certificate": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 503,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/pki/peers/{fingerprint}/certificate\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tstore, e := s.pkiStore()\n\t\tif e != nil {\n\t\t\tproblem(w, 503, e.Error())\n\t\t\treturn\n\t\t}\n\t\tpeer, e := store.Get(r.PathValue(\"fingerprint\"))\n\t\tif e != nil {\n\t\t\tproblem(w, 404, e.Error())\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Type\", \"application/x-pem-file\")\n\t\tw.Header().Set(\"Content-Disposition\", \"attachment; filename=ca-\"+peer.Fingerprint+\".crt\")\n\t\t_, _ = w.Write([]byte(peer.PEM))\n\t}))",
+      "session": false,
+      "admin": true
+    },
+    "POST /api/v1/pki/ca/{fingerprint}/install": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 519,
+      "fields": [
+        "fingerprint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/ca/{fingerprint}/install\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tFingerprint string `json:\"fingerprint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tif fp != body.Fingerprint {\n\t\t\tproblem(w, 400, \"confirma la huella SHA-256 completa\")\n\t\t\treturn\n\t\t}\n\t\troots, e := s.localRoots(r.Context())\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tfor _, root := range roots {\n\t\t\tif root.Fingerprint == fp {\n\t\t\t\troot.Approved = true // la CA ya es propiedad de este Gateway, pero requiere confirmación interactiva\n\t\t\t\tctx, cancel := context.WithTimeout(r.Context(), 50*time.Second)\n\t\t\t\tdefer cancel()\n\t\t\t\tif e = s.changeSystemCA(ctx, \"install\", root); e != nil {\n\t\t\t\t\tproblem(w, 409, e.Error()+\". \"+pki.Instructions(root))\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-LOCAL-TRUST\", \"CA propia instalada en el SO: %s\", fp)\n\t\t\t\treply(w, 200, map[string]bool{\"installed\": true, \"restart_recommended\": true}, nil)\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tproblem(w, 404, \"CA local no encontrada\")\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/pki/ca/{fingerprint}/uninstall": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 555,
+      "fields": [
+        "fingerprint"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/pki/ca/{fingerprint}/uninstall\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar body struct {\n\t\t\tFingerprint string `json:\"fingerprint\"`\n\t\t}\n\t\tif !decode(w, r, &body) {\n\t\t\treturn\n\t\t}\n\t\tfp := r.PathValue(\"fingerprint\")\n\t\tif fp != body.Fingerprint {\n\t\t\tproblem(w, 400, \"confirma la huella SHA-256 completa\")\n\t\t\treturn\n\t\t}\n\t\troots, e := s.localRoots(r.Context())\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tfor _, root := range roots {\n\t\t\tif root.Fingerprint == fp {\n\t\t\t\tif remover, ok := s.controller.(interface{ RemoveLocalCA(string, string) error }); ok {\n\t\t\t\t\te = remover.RemoveLocalCA(root.Name, fp)\n\t\t\t\t} else {\n\t\t\t\t\te = pki.RemoveLocal(s.caDataDirectory(), root.Name, fp)\n\t\t\t\t}\n\t\t\t\tif e != nil {\n\t\t\t\t\tproblem(w, 500, e.Error())\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-LOCAL-REMOVE\", \"CA retirada del almacén local: %s\", fp)\n\t\t\t\tctx, cancel := context.WithTimeout(r.Context(), 50*time.Second)\n\t\t\t\tdefer cancel()\n\t\t\t\tif e = s.changeSystemCA(ctx, \"uninstall\", root); e != nil {\n\t\t\t\t\treply(w, 200, map[string]any{\"local_removed\": true, \"uninstalled\": false, \"restart_recommended\": true, \"warning\": e.Error(), \"instructions\": pki.RemovalInstructions(root)}, nil)\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tdiagnostics.Emit(\"admin\", diagnostics.InfoLevel, \"HGW-PKI-LOCAL-TRUST\", \"CA propia retirada del SO: %s\", fp)\n\t\t\t\treply(w, 200, map[string]bool{\"local_removed\": true, \"uninstalled\": true, \"restart_recommended\": true}, nil)\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tproblem(w, 404, \"CA local no encontrada\")\n\t}))",
+      "session": true,
+      "admin": true
+    },
+    "GET /api/v1/pki/ca/{fingerprint}/certificate": {
+      "source": "src/internal/admin/routes_pki.go",
+      "line": 601,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/pki/ca/{fingerprint}/certificate\", gate(func(w http.ResponseWriter, r *http.Request) {\n\t\troots, e := s.localRoots(r.Context())\n\t\tif e != nil {\n\t\t\tproblem(w, 500, e.Error())\n\t\t\treturn\n\t\t}\n\t\tfor _, root := range roots {\n\t\t\tif root.Fingerprint == r.PathValue(\"fingerprint\") {\n\t\t\t\tw.Header().Set(\"Content-Type\", \"application/x-pem-file\")\n\t\t\t\tw.Header().Set(\"Content-Disposition\", \"attachment; filename=local-ca-\"+root.Fingerprint+\".crt\")\n\t\t\t\t_, _ = w.Write([]byte(root.PEM))\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tproblem(w, 404, \"CA no encontrada\")\n\t}))\n}\n\n// La sincronización solo actualiza fechas tras verificar la identidad fijada.\n// Una CA remota cambiada sigue sin confianza hasta aprobarla por un canal independiente.\nfunc (s *Server) RunPKISynchronizer(ctx context.Context) {\n\tticker := time.NewTicker(6 * time.Hour)\n\tdefer ticker.Stop()\n\tfor {\n\t\tselect {\n\t\tcase <-ctx.Done():\n\t\t\treturn\n\t\tcase <-ticker.C:\n\t\t\tstore, e := s.pkiStore()\n\t\t\tif e != nil {\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tpeers, e := store.List()\n\t\t\tif e != nil {\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tfor _, peer := range peers {\n\t\t\t\tif !peer.Approved || peer.Endpoint == \"\" {\n\t\t\t\t\tcontinue\n\t\t\t\t}\n\t\t\t\tnext, e := s.syncPeer(ctx, peer)\n\t\t\t\tif e != nil {\n\t\t\t\t\tdiagnostics.Emit(\"admin\", diagnostics.Warn, \"HGW-PKI-SYNC\", \"Sincronización pendiente para peer=%s: %v\", peer.Fingerprint, e)\n\t\t\t\t\tcontinue\n\t\t\t\t}\n\t\t\t\tif e = store.MarkVerified(peer.Fingerprint, peer.Endpoint, next.LastSync); e != nil {\n\t\t\t\t\tdiagnostics.Emit(\"admin\", diagnostics.Warn, \"HGW-PKI-SYNC\", \"No se pudo guardar el estado peer=%s: %v\", peer.Fingerprint, e)\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n\nfunc (s *Server) syncPeer(ctx context.Context, peer pki.Anchor) (pki.Anchor, error) {\n\tif ctl, ok := s.controller.(interface {\n\t\tPKISync(context.Context, pki.Anchor) (pki.Anchor, error)\n\t}); ok {\n\t\treturn ctl.PKISync(ctx, peer)\n\t}\n\treturn pki.Sync(ctx, peer)\n}",
+      "session": false,
+      "admin": true
+    },
+    "PUT /api/v1/pki/helper": {
+      "source": "src/internal/admin/routes_pki_helper.go",
+      "line": 38,
+      "fields": [
+        "enabled"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/pki/helper\", s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\tif !s.requirePKISession(w, r) {\n\t\t\treturn\n\t\t}\n\t\tvar req struct {\n\t\t\tEnabled bool `json:\"enabled\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tif s.database == nil {\n\t\t\tproblem(w, 503, \"base de datos no disponible\")\n\t\t\treturn\n\t\t}\n\t\tif req.Enabled && pki.HelperStatus()[\"available\"] != true {\n\t\t\tproblem(w, 409, \"coloca el helper de este sistema junto al ejecutable del Gateway\")\n\t\t\treturn\n\t\t}\n\t\tif err := s.database.PutJSON(caHelperKey, req.Enabled); err != nil {\n\t\t\tproblem(w, 500, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"enabled\": req.Enabled}, nil)\n\t}))\n}",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/policy/templates": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 35,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/policy/templates\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\ts.read(w, r, func(ctx context.Context) (any, error) { return c.PolicyTemplates(ctx) })\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/network/admin/policy/templates/import": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 38,
+      "fields": [
+        "overwrite"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/admin/policy/templates/import\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\tvar request struct {\n\t\t\tpolicytemplates.Bundle\n\t\t\tOverwrite bool `json:\"overwrite\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &request, policytemplates.MaxCatalogBytes) {\n\t\t\treturn\n\t\t}\n\t\tresult, err := c.StorePolicyTemplates(r.Context(), request.Bundle, request.Overwrite)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "DELETE /api/v1/network/admin/policy/templates/{id}": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 53,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"DELETE /api/v1/network/admin/policy/templates/{id}\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\tif err := c.DeletePolicyTemplate(r.Context(), r.PathValue(\"id\")); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"ok\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/policy/templates/export": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 60,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/policy/templates/export\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\ttemplates, err := c.PolicyTemplates(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 500, \"no se pudo exportar el catálogo\")\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Disposition\", `attachment; filename=\"gateway-acl-templates.json\"`)\n\t\treply(w, 200, policytemplates.Bundle{Format: policytemplates.Format, Version: 1, Templates: templates}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/policy/templates/repository": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 69,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/policy/templates/repository\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\ts.read(w, r, func(ctx context.Context) (any, error) { return c.PolicyRepoSettings(ctx) })\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "PUT /api/v1/network/admin/policy/templates/repository": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 72,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/network/admin/policy/templates/repository\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\tvar request TemplateRepositorySettings\n\t\tif !decode(w, r, &request) {\n\t\t\treturn\n\t\t}\n\t\tif err := c.SavePolicyRepoSettings(r.Context(), request); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"ok\": true}, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "GET /api/v1/network/admin/policy/templates/repository/preview": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 83,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/network/admin/policy/templates/repository/preview\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\tresult, err := c.FetchPolicyRepo(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": true,
+      "admin": false
+    },
+    "POST /api/v1/network/admin/policy/templates/repository/sync": {
+      "source": "src/internal/admin/routes_policy_templates.go",
+      "line": 91,
+      "fields": [
+        "overwrite"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/network/admin/policy/templates/repository/sync\", onlyAdmin(func(w http.ResponseWriter, r *http.Request, c PolicyTemplateController) {\n\t\tvar req struct {\n\t\t\tOverwrite bool `json:\"overwrite\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tresult, err := c.SyncPolicyRepo(r.Context(), req.Overwrite)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))\n}",
+      "session": true,
+      "admin": false
+    },
+    "GET /admin/": {
+      "source": "src/internal/admin/routes_static.go",
+      "line": 48,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/\", func(w http.ResponseWriter, r *http.Request) {\n\t\t// En ServeMux, /admin/ también actúa como ruta comodín para cualquier\n\t\t// subruta que no coincida con otra regla explícita. No debemos devolver\n\t\t// el HTML del panel cuando se solicita una URL inexistente.\n\t\tif r.URL.Path != \"/admin/\" {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\ts.asset(w, r, \"panel.html\", \"text/html; charset=utf-8\")\n\t})\n\tfor path, resource := range webAssets {\n\t\tresource := resource\n\t\tmux.HandleFunc(\"GET \"+path, func(w http.ResponseWriter, r *http.Request) {\n\t\t\ts.asset(w, r, resource.file, resource.mime)\n\t\t})\n\t}",
+      "session": false,
+      "admin": false
+    },
+    "GET /admin/locales/levels": {
+      "source": "src/internal/admin/routes_static.go",
+      "line": 64,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/locales/levels\", func(w http.ResponseWriter, r *http.Request) {\n\t\tlabels := map[string]string{}\n\t\tfor _, lang := range i18n.Codes() {\n\t\t\tfor source, code := range map[string]string{\"ERROR\": \"error\", \"ADVERTENCIA\": \"warn\", \"INFORMACIÓN\": \"info\", \"DEPURACIÓN\": \"debug\", \"TRAZA\": \"trace\"} {\n\t\t\t\tlabels[i18n.Translate(lang, source)] = code\n\t\t\t}\n\t\t}\n\t\treply(w, http.StatusOK, labels, nil)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "GET /admin/locales": {
+      "source": "src/internal/admin/routes_static.go",
+      "line": 73,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/locales\", func(w http.ResponseWriter, r *http.Request) {\n\t\treply(w, http.StatusOK, i18n.Codes(), nil)\n\t})",
+      "session": false,
+      "admin": false
+    },
+    "GET /admin/locales/{filename}": {
+      "source": "src/internal/admin/routes_static.go",
+      "line": 76,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /admin/locales/{filename}\", func(w http.ResponseWriter, r *http.Request) {\n\t\tlang, ok := strings.CutSuffix(r.PathValue(\"filename\"), \".json\")\n\t\tif !ok {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\tdata, err := i18n.Data(lang)\n\t\tif err != nil {\n\t\t\thttp.NotFound(w, r)\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Type\", \"application/json; charset=utf-8\")\n\t\t_, _ = w.Write(data)\n\t})\n}\n\nfunc (s *Server) asset(w http.ResponseWriter, r *http.Request, name, mime string) {\n\tdata, e := assets.ReadFile(name)\n\tif e != nil {\n\t\tproblem(w, 500, \"asset no disponible\")\n\t\treturn\n\t}\n\tw.Header().Set(\"Content-Type\", mime)\n\t_, _ = w.Write(data)\n}",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/templates/export": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 47,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/templates/export\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\tbundle, err := c.ExportTemplates(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 500, \"no se pudieron exportar las plantillas\")\n\t\t\treturn\n\t\t}\n\t\tw.Header().Set(\"Content-Disposition\", `attachment; filename=\"headscale-gateway-templates.json\"`)\n\t\treply(w, 200, bundle, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/templates/import": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 56,
+      "fields": [
+        "format",
+        "overwrite",
+        "templates",
+        "version"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/templates/import\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\tvar request struct {\n\t\t\tFormat    string                 `json:\"format\"`\n\t\t\tVersion   int                    `json:\"version\"`\n\t\t\tTemplates []state.TemplateRecord `json:\"templates\"`\n\t\t\tOverwrite bool                   `json:\"overwrite\"`\n\t\t}\n\t\tif !decodeLimit(w, r, &request, templatelib.MaxBytes) {\n\t\t\treturn\n\t\t}\n\t\tresult, err := c.ImportTemplates(r.Context(), templatelib.Bundle[state.TemplateRecord]{Format: request.Format, Version: request.Version, Templates: request.Templates}, request.Overwrite)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/templates/repository": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 73,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/templates/repository\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\ts.read(w, r, func(ctx context.Context) (any, error) { return c.RepositorySettings(ctx) })\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "PUT /api/v1/templates/repository": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 76,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"PUT /api/v1/templates/repository\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\tvar settings TemplateRepositorySettings\n\t\tif !decode(w, r, &settings) {\n\t\t\treturn\n\t\t}\n\t\tif err := c.SaveRepositorySettings(r.Context(), settings); err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, map[string]bool{\"ok\": true}, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/templates/repository/preview": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 87,
+      "fields": [],
+      "query": [],
+      "code": "mux.HandleFunc(\"GET /api/v1/templates/repository/preview\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\tresult, err := c.DownloadRepository(r.Context())\n\t\tif err != nil {\n\t\t\tproblem(w, 502, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))",
+      "session": false,
+      "admin": false
+    },
+    "POST /api/v1/templates/repository/sync": {
+      "source": "src/internal/admin/routes_templates_transfer.go",
+      "line": 95,
+      "fields": [
+        "overwrite"
+      ],
+      "query": [],
+      "code": "mux.HandleFunc(\"POST /api/v1/templates/repository/sync\", adminOnly(func(w http.ResponseWriter, r *http.Request, c TemplateController) {\n\t\tvar req struct {\n\t\t\tOverwrite bool `json:\"overwrite\"`\n\t\t}\n\t\tif !decode(w, r, &req) {\n\t\t\treturn\n\t\t}\n\t\tresult, err := c.SyncRepository(r.Context(), req.Overwrite)\n\t\tif err != nil {\n\t\t\tproblem(w, 400, err.Error())\n\t\t\treturn\n\t\t}\n\t\treply(w, 200, result, nil)\n\t}))\n}\nfunc decodeLimit(w http.ResponseWriter, r *http.Request, dst any, limit int64) bool {\n\tif !strings.HasPrefix(strings.ToLower(r.Header.Get(\"Content-Type\")), \"application/json\") {\n\t\tproblem(w, 415, \"Content-Type debe ser application/json\")\n\t\treturn false\n\t}\n\tdec := json.NewDecoder(http.MaxBytesReader(w, r.Body, limit))\n\tdec.DisallowUnknownFields()\n\tif err := dec.Decode(dst); err != nil {\n\t\tproblem(w, 400, \"JSON de importación inválido\")\n\t\treturn false\n\t}\n\tvar extra any\n\tif err := dec.Decode(&extra); err == io.EOF {\n\t\treturn true\n\t}\n\tproblem(w, 400, \"solo se admite un objeto JSON\")\n\treturn false\n}",
+      "session": false,
+      "admin": false
+    },
+    "GET /api/v1/portal": {
+      "source": "src/internal/admin/routes_portal.go",
+      "line": 19,
+      "fields": [],
+      "query": [],
+      "code": "package admin\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"github.com/gentedelcondado/headscale-gateway/internal/portal\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\ntype portalController interface {\n\tPortalGet(context.Context) (any, error)\n\tPortalSave(context.Context, portal.Config) (any, error)\n\tPortalSync(context.Context) (any, error)\n\tPortalDiscover(context.Context) (any, error)\n}\n\nfunc (s *Server) registerPortalRoutes(mux routeRegistrar) {\n\tfor _, operation := range []struct{ method, path string }{{\"GET\", \"\"}, {\"PUT\", \"\"}, {\"POST\", \"/sync\"}, {\"POST\", \"/discover\"}} {\n\t\top := operation\n\t\tmux.HandleFunc(op.method+\" /api/v1/portal\"+op.path, s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\t\tif !s.requirePKISession(w, r) {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tctl, ok := s.controller.(portalController)\n\t\t\tif !ok {\n\t\t\t\tproblem(w, 501, \"portal no disponible\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tvar result any\n\t\t\tvar err error\n\t\t\tswitch op.path {\n\t\t\tcase \"/sync\":\n\t\t\t\tresult, err = ctl.PortalSync(r.Context())\n\t\t\tcase \"/discover\":\n\t\t\t\tresult, err = ctl.PortalDiscover(r.Context())\n\t\t\tdefault:\n\t\t\t\tif op.method == \"GET\" {\n\t\t\t\t\tresult, err = ctl.PortalGet(r.Context())\n\t\t\t\t} else {\n\t\t\t\t\tif !strings.HasPrefix(strings.ToLower(r.Header.Get(\"Content-Type\")), \"application/json\") {\n\t\t\t\t\t\tproblem(w, 415, \"Content-Type debe ser application/json\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar cfg portal.Config\n\t\t\t\t\tdecoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))\n\t\t\t\t\tdecoder.DisallowUnknownFields()\n\t\t\t\t\tif e := decoder.Decode(&cfg); e != nil {\n\t\t\t\t\t\tproblem(w, 400, \"configuración de portal inválida\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar extra any\n\t\t\t\t\tif decoder.Decode(&extra) != io.EOF {\n\t\t\t\t\t\tproblem(w, 400, \"solo se admite un objeto JSON\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tresult, err = ctl.PortalSave(r.Context(), cfg)\n\t\t\t\t}\n\t\t\t}\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 409, err.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, result, nil)\n\t\t}))\n\t}\n}\n",
+      "session": true,
+      "admin": true
+    },
+    "PUT /api/v1/portal": {
+      "source": "src/internal/admin/routes_portal.go",
+      "line": 19,
+      "fields": [],
+      "query": [],
+      "code": "package admin\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"github.com/gentedelcondado/headscale-gateway/internal/portal\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\ntype portalController interface {\n\tPortalGet(context.Context) (any, error)\n\tPortalSave(context.Context, portal.Config) (any, error)\n\tPortalSync(context.Context) (any, error)\n\tPortalDiscover(context.Context) (any, error)\n}\n\nfunc (s *Server) registerPortalRoutes(mux routeRegistrar) {\n\tfor _, operation := range []struct{ method, path string }{{\"GET\", \"\"}, {\"PUT\", \"\"}, {\"POST\", \"/sync\"}, {\"POST\", \"/discover\"}} {\n\t\top := operation\n\t\tmux.HandleFunc(op.method+\" /api/v1/portal\"+op.path, s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\t\tif !s.requirePKISession(w, r) {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tctl, ok := s.controller.(portalController)\n\t\t\tif !ok {\n\t\t\t\tproblem(w, 501, \"portal no disponible\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tvar result any\n\t\t\tvar err error\n\t\t\tswitch op.path {\n\t\t\tcase \"/sync\":\n\t\t\t\tresult, err = ctl.PortalSync(r.Context())\n\t\t\tcase \"/discover\":\n\t\t\t\tresult, err = ctl.PortalDiscover(r.Context())\n\t\t\tdefault:\n\t\t\t\tif op.method == \"GET\" {\n\t\t\t\t\tresult, err = ctl.PortalGet(r.Context())\n\t\t\t\t} else {\n\t\t\t\t\tif !strings.HasPrefix(strings.ToLower(r.Header.Get(\"Content-Type\")), \"application/json\") {\n\t\t\t\t\t\tproblem(w, 415, \"Content-Type debe ser application/json\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar cfg portal.Config\n\t\t\t\t\tdecoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))\n\t\t\t\t\tdecoder.DisallowUnknownFields()\n\t\t\t\t\tif e := decoder.Decode(&cfg); e != nil {\n\t\t\t\t\t\tproblem(w, 400, \"configuración de portal inválida\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar extra any\n\t\t\t\t\tif decoder.Decode(&extra) != io.EOF {\n\t\t\t\t\t\tproblem(w, 400, \"solo se admite un objeto JSON\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tresult, err = ctl.PortalSave(r.Context(), cfg)\n\t\t\t\t}\n\t\t\t}\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 409, err.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, result, nil)\n\t\t}))\n\t}\n}\n",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/portal/sync": {
+      "source": "src/internal/admin/routes_portal.go",
+      "line": 19,
+      "fields": [],
+      "query": [],
+      "code": "package admin\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"github.com/gentedelcondado/headscale-gateway/internal/portal\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\ntype portalController interface {\n\tPortalGet(context.Context) (any, error)\n\tPortalSave(context.Context, portal.Config) (any, error)\n\tPortalSync(context.Context) (any, error)\n\tPortalDiscover(context.Context) (any, error)\n}\n\nfunc (s *Server) registerPortalRoutes(mux routeRegistrar) {\n\tfor _, operation := range []struct{ method, path string }{{\"GET\", \"\"}, {\"PUT\", \"\"}, {\"POST\", \"/sync\"}, {\"POST\", \"/discover\"}} {\n\t\top := operation\n\t\tmux.HandleFunc(op.method+\" /api/v1/portal\"+op.path, s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\t\tif !s.requirePKISession(w, r) {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tctl, ok := s.controller.(portalController)\n\t\t\tif !ok {\n\t\t\t\tproblem(w, 501, \"portal no disponible\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tvar result any\n\t\t\tvar err error\n\t\t\tswitch op.path {\n\t\t\tcase \"/sync\":\n\t\t\t\tresult, err = ctl.PortalSync(r.Context())\n\t\t\tcase \"/discover\":\n\t\t\t\tresult, err = ctl.PortalDiscover(r.Context())\n\t\t\tdefault:\n\t\t\t\tif op.method == \"GET\" {\n\t\t\t\t\tresult, err = ctl.PortalGet(r.Context())\n\t\t\t\t} else {\n\t\t\t\t\tif !strings.HasPrefix(strings.ToLower(r.Header.Get(\"Content-Type\")), \"application/json\") {\n\t\t\t\t\t\tproblem(w, 415, \"Content-Type debe ser application/json\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar cfg portal.Config\n\t\t\t\t\tdecoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))\n\t\t\t\t\tdecoder.DisallowUnknownFields()\n\t\t\t\t\tif e := decoder.Decode(&cfg); e != nil {\n\t\t\t\t\t\tproblem(w, 400, \"configuración de portal inválida\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar extra any\n\t\t\t\t\tif decoder.Decode(&extra) != io.EOF {\n\t\t\t\t\t\tproblem(w, 400, \"solo se admite un objeto JSON\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tresult, err = ctl.PortalSave(r.Context(), cfg)\n\t\t\t\t}\n\t\t\t}\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 409, err.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, result, nil)\n\t\t}))\n\t}\n}\n",
+      "session": true,
+      "admin": true
+    },
+    "POST /api/v1/portal/discover": {
+      "source": "src/internal/admin/routes_portal.go",
+      "line": 19,
+      "fields": [],
+      "query": [],
+      "code": "package admin\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"github.com/gentedelcondado/headscale-gateway/internal/portal\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\ntype portalController interface {\n\tPortalGet(context.Context) (any, error)\n\tPortalSave(context.Context, portal.Config) (any, error)\n\tPortalSync(context.Context) (any, error)\n\tPortalDiscover(context.Context) (any, error)\n}\n\nfunc (s *Server) registerPortalRoutes(mux routeRegistrar) {\n\tfor _, operation := range []struct{ method, path string }{{\"GET\", \"\"}, {\"PUT\", \"\"}, {\"POST\", \"/sync\"}, {\"POST\", \"/discover\"}} {\n\t\top := operation\n\t\tmux.HandleFunc(op.method+\" /api/v1/portal\"+op.path, s.secure(func(w http.ResponseWriter, r *http.Request) {\n\t\t\tif !s.requirePKISession(w, r) {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tctl, ok := s.controller.(portalController)\n\t\t\tif !ok {\n\t\t\t\tproblem(w, 501, \"portal no disponible\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tvar result any\n\t\t\tvar err error\n\t\t\tswitch op.path {\n\t\t\tcase \"/sync\":\n\t\t\t\tresult, err = ctl.PortalSync(r.Context())\n\t\t\tcase \"/discover\":\n\t\t\t\tresult, err = ctl.PortalDiscover(r.Context())\n\t\t\tdefault:\n\t\t\t\tif op.method == \"GET\" {\n\t\t\t\t\tresult, err = ctl.PortalGet(r.Context())\n\t\t\t\t} else {\n\t\t\t\t\tif !strings.HasPrefix(strings.ToLower(r.Header.Get(\"Content-Type\")), \"application/json\") {\n\t\t\t\t\t\tproblem(w, 415, \"Content-Type debe ser application/json\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar cfg portal.Config\n\t\t\t\t\tdecoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))\n\t\t\t\t\tdecoder.DisallowUnknownFields()\n\t\t\t\t\tif e := decoder.Decode(&cfg); e != nil {\n\t\t\t\t\t\tproblem(w, 400, \"configuración de portal inválida\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tvar extra any\n\t\t\t\t\tif decoder.Decode(&extra) != io.EOF {\n\t\t\t\t\t\tproblem(w, 400, \"solo se admite un objeto JSON\")\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tresult, err = ctl.PortalSave(r.Context(), cfg)\n\t\t\t\t}\n\t\t\t}\n\t\t\tif err != nil {\n\t\t\t\tproblem(w, 409, err.Error())\n\t\t\t\treturn\n\t\t\t}\n\t\t\treply(w, 200, result, nil)\n\t\t}))\n\t}\n}\n",
+      "session": true,
+      "admin": true
+    }
+  },
+  "commands": [
+    {
+      "name": "version",
+      "description": "Versión y plataforma",
+      "example": "./headscale-gateway version"
+    },
+    {
+      "name": "doctor",
+      "description": "Diagnóstico local sin iniciar la VPN",
+      "example": "./headscale-gateway doctor --db /ruta/gateway.sqlite"
+    },
+    {
+      "name": "logs status",
+      "description": "Estado de los registros",
+      "example": "./headscale-gateway logs status --dir /ruta/logs"
+    },
+    {
+      "name": "logs tail",
+      "description": "Últimas líneas del registro",
+      "example": "./headscale-gateway logs tail --dir /ruta/logs --channel gateway --lines 50"
+    },
+    {
+      "name": "logs follow",
+      "description": "Seguir nuevas líneas; Ctrl+C para terminar",
+      "example": "./headscale-gateway logs follow --dir /ruta/logs --channel admin"
+    },
+    {
+      "name": "--help",
+      "description": "Ayuda de arranque",
+      "example": "./headscale-gateway --help"
+    },
+    {
+      "name": "--db",
+      "description": "Arrancar con una base de datos",
+      "example": "./headscale-gateway --db /ruta/gateway.sqlite"
+    }
+  ],
+  "options": [
+    {
+      "name": "--db",
+      "default": "\"\"",
+      "description": "Ruta de gateway.sqlite",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--reload",
+      "default": "false",
+      "description": "Solicitar recarga",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--reset-recovery",
+      "default": "false",
+      "description": "Rotar credencial de recuperación",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--backup",
+      "default": "\"\"",
+      "description": "Compatibilidad: copia sin cifrar deshabilitada",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--restore-backup",
+      "default": "\"\"",
+      "description": "Restauración offline",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--restart-wait-pid",
+      "default": "0",
+      "description": "Interno: reinicio Windows",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--apply-staged-restore",
+      "default": "\"\"",
+      "description": "Interno: restauración preparada",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--set-domain",
+      "default": "\"\"",
+      "description": "Dominio base",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--set-headscale",
+      "default": "\"\"",
+      "description": "URL Headscale",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--help",
+      "default": "false",
+      "description": "Mostrar ayuda",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--log-file",
+      "default": "\"\"",
+      "description": "Archivo de registro",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--log-max-mb",
+      "default": "10",
+      "description": "MiB por registro",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--log-backups",
+      "default": "5",
+      "description": "Copias rotadas",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--log-level",
+      "default": "\"\"",
+      "description": "Nivel de registro",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--debug",
+      "default": "false",
+      "description": "Nivel DEBUG",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--trace",
+      "default": "false",
+      "description": "Nivel TRACE",
+      "source": "src/internal/bootstrap/options.go",
+      "context": "startup"
+    },
+    {
+      "name": "--db",
+      "default": "\"\"",
+      "description": "Ruta de gateway.sqlite",
+      "source": "src/internal/cli/cli.go",
+      "context": "diagnostics"
+    },
+    {
+      "name": "--dir",
+      "default": "\"\"",
+      "description": "Directorio de logs; prevalece sobre --db",
+      "source": "src/internal/cli/cli.go",
+      "context": "diagnostics"
+    },
+    {
+      "name": "--channel",
+      "default": "\"gateway\"",
+      "description": "gateway|proxy|admin",
+      "source": "src/internal/cli/cli.go",
+      "context": "diagnostics"
+    },
+    {
+      "name": "--lines",
+      "default": "50",
+      "description": "últimas 1-200 líneas",
+      "source": "src/internal/cli/cli.go",
+      "context": "diagnostics"
+    }
+  ],
+  "integrations": [
+    {
+      "name": "Headscale",
+      "description": "Inventario, usuarios, claves, etiquetas, rutas y ACL mediante REST. La clave de Headscale es independiente del token del Gateway. Las operaciones disponibles dependen de la versión del servidor.",
+      "source": "src/internal/network",
+      "docs": "https://headscale.net/stable/ref/api/"
+    },
+    {
+      "name": "Technitium",
+      "description": "Consultar, crear, actualizar y borrar registros de la zona configurada. Su API utiliza GET también para modificaciones. El token se utiliza solo en el servidor.",
+      "source": "dns_technitium.go",
+      "docs": "https://github.com/TechnitiumSoftware/DnsServer/blob/master/APIDOCS.md"
+    },
+    {
+      "name": "Cloudflare",
+      "description": "Registros DNS de la zona configurada; publicación sin proxy. ACME utiliza credenciales de su proveedor configurado.",
+      "source": "dns_cloudflare.go",
+      "docs": "https://developers.cloudflare.com/api/resources/dns/subresources/records/"
+    },
+    {
+      "name": "Tailscale / tsnet",
+      "description": "SDK y LocalClient internos para estado, preferencias, login y diagnósticos. No se expone un proxy genérico de la API local de Tailscale.",
+      "source": "src/internal/network; tailscale.go",
+      "docs": "https://tailscale.com/kb/1244/tsnet"
+    },
+    {
+      "name": "ACME / CertMagic",
+      "description": "Emisión y renovación TLS mediante el cliente ACME y desafío DNS. No hay una API administrativa ACME pública en el Gateway.",
+      "source": "certificates.go; go.mod",
+      "docs": "https://github.com/caddyserver/certmagic"
+    },
+    {
+      "name": "OIDC / LDAP",
+      "description": "Autenticación y asignación explícita de roles. OIDC usa discovery, autorización, token y JWKS del proveedor; LDAP es un protocolo de directorio, no REST.",
+      "source": "src/internal/admin/auth_oidc.go; internal/admin/auth_ldap.go",
+      "docs": "https://openid.net/specs/openid-connect-discovery-1_0.html"
+    },
+    {
+      "name": "Federación",
+      "description": "Catálogo HTTPS versionado y CA pública opcional. Solo peers aprobados, TLS verificado y ACL; ninguna credencial administrativa se transmite al peer.",
+      "source": "src/internal/portal; internal/pki",
+      "docs": ""
+    },
+    {
+      "name": "Repositorio de plantillas",
+      "description": "Descarga HTTPS de catálogos JSON desde la URL configurada; puede alojarse en Forgejo o GitHub. No utiliza una API de administración de repositorios.",
+      "source": "src/internal/templatelib",
+      "docs": ""
+    }
+  ],
+  "external": [
+    {
+      "name": "Headscale",
+      "method": "GET",
+      "endpoint": "/api/v1/user",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/user",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/user/{id}/rename/{name}",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "DELETE",
+      "endpoint": "/api/v1/user/{id}",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "GET",
+      "endpoint": "/api/v1/preauthkey",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/preauthkey",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/preauthkey/expire",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "DELETE",
+      "endpoint": "/api/v1/preauthkey?id={id}",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/node/{id}/rename/{name}",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/node/{id}/expire",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "DELETE",
+      "endpoint": "/api/v1/node/{id}",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/node/{id}/tags",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "POST",
+      "endpoint": "/api/v1/node/{id}/approve_routes",
+      "source": "src/internal/network/manage.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "GET",
+      "endpoint": "/api/v1/policy",
+      "source": "src/internal/network/policy_dns.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "PUT",
+      "endpoint": "/api/v1/policy",
+      "source": "src/internal/network/policy_dns.go"
+    },
+    {
+      "name": "Headscale",
+      "method": "GET",
+      "endpoint": "/api/v1/node",
+      "source": "src/internal/network/headscale.go"
+    },
+    {
+      "name": "Technitium",
+      "method": "GET",
+      "endpoint": "/api/zones/records/get",
+      "source": "dns_technitium.go"
+    },
+    {
+      "name": "Technitium",
+      "method": "GET",
+      "endpoint": "/api/zones/records/add",
+      "source": "dns_technitium.go"
+    },
+    {
+      "name": "Technitium",
+      "method": "GET",
+      "endpoint": "/api/zones/records/update",
+      "source": "dns_technitium.go"
+    },
+    {
+      "name": "Technitium",
+      "method": "GET",
+      "endpoint": "/api/zones/records/delete",
+      "source": "dns_technitium.go"
+    },
+    {
+      "name": "Cloudflare",
+      "method": "GET",
+      "endpoint": "/client/v4/zones/{zone_id}/dns_records",
+      "source": "dns_cloudflare.go"
+    },
+    {
+      "name": "Cloudflare",
+      "method": "POST",
+      "endpoint": "/client/v4/zones/{zone_id}/dns_records",
+      "source": "dns_cloudflare.go"
+    },
+    {
+      "name": "Cloudflare",
+      "method": "PATCH",
+      "endpoint": "/client/v4/zones/{zone_id}/dns_records/{record_id}",
+      "source": "dns_cloudflare.go"
+    },
+    {
+      "name": "Cloudflare",
+      "method": "DELETE",
+      "endpoint": "/client/v4/zones/{zone_id}/dns_records/{record_id}",
+      "source": "dns_cloudflare.go"
+    }
+  ],
+  "examples": {
+    "POST /api/v1/network/ping": {
+      "node_id": "1",
+      "mode": "tsmp"
+    },
+    "PUT /api/v1/config": {
+      "changes": {
+        "admin.enabled": "true"
+      }
+    },
+    "POST /api/v1/network/admin/policy/parse": {
+      "policy": "{\"grants\":[]}"
+    },
+    "PUT /api/v1/network/admin/policy": {
+      "policy": "{\"grants\":[]}",
+      "revision": "REEMPLAZAR_POR_REVISION_LEIDA"
+    },
+    "PUT /api/v1/pki/publication": {
+      "enabled": false
+    },
+    "PUT /api/v1/pki/helper": {
+      "enabled": false
+    },
+    "POST /api/v1/auth/login": {
+      "username": "USUARIO",
+      "password": "CONTRASEÑA",
+      "totp": "",
+      "remember": false
+    },
+    "POST /api/v1/auth/mfa/confirm": {
+      "code": "000000"
+    },
+    "POST /api/v1/auth/mfa/disable": {
+      "code": "000000"
+    },
+    "POST /api/v1/auth/bootstrap": {
+      "code": "CODIGO_LOCAL"
+    },
+    "POST /api/v1/auth/recovery/rotate": {
+      "confirm": "ROTAR"
+    },
+    "PUT /api/v1/network/gateway/preferences": {
+      "accept_routes": false,
+      "accept_dns": false,
+      "advertise_routes": []
+    }
+  }
+}

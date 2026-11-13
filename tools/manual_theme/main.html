@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ config.site_description | e }}">
+  <title>{{ page.title | default('Manual') | e }} · Headscale Gateway</title>
+  <link rel="stylesheet" href="{{ 'assets/manual.css' | url }}">
+  <script src="{{ 'assets/search-data.js' | url }}" defer></script>
+  <script src="{{ 'assets/manual.js' | url }}" defer></script>
+</head>
+<body data-base="{{ base_url | e }}">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header">
+    <a class="brand" href="{{ 'index.html' | url }}"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
+    <div class="header-links"><span>Manual · {{ config.extra.version }}</span><a href="{{ config.repo_url }}">Repositorio ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <details id="manual-menu" open>
+        <summary>Índice del manual</summary>
+        <search>
+          <label for="manual-search">Buscar en el manual</label>
+          <input id="manual-search" type="search" placeholder="Copias, DNS, instalación…" aria-controls="search-results">
+          <p id="search-status" role="status"></p>
+          <ul id="search-results" hidden></ul>
+        </search>
+        <nav aria-label="Temas del manual">
+          {% for section in nav %}
+            {% if section.is_section %}
+              <p class="nav-group">{{ section.title }}</p>
+              <ul>{% for item in section.children %}
+                <li><a href="{{ item.url | url }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.title }}</a></li>
+              {% endfor %}</ul>
+            {% else %}
+              <a class="nav-home" href="{{ section.url | url }}" {% if section.active %}aria-current="page"{% endif %}>{{ section.title }}</a>
+            {% endif %}
+          {% endfor %}
+        </nav>
+      </details>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      {% if not page.is_homepage %}<p class="breadcrumb"><a href="{{ 'index.html' | url }}">Manual</a><span aria-hidden="true"> / </span>{{ page.title }}</p>{% endif %}
+      <article class="prose">{% block content %}{{ page.content }}{% endblock %}</article>
+      <footer class="page-footer">
+        <p>Headscale Gateway · Documentación en español</p>
+        <a href="{{ 'MANUAL_WEB.html' | url }}">Cómo editar este manual</a>
+      </footer>
+    </main>
+    <aside class="page-toc">
+      {% if page.toc %}<nav aria-label="En esta página"><p>En esta página</p><ul>
+        {% for top in page.toc %}{% for item in top.children %}
+          <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+        {% endfor %}{% endfor %}
+      </ul></nav>{% endif %}
+    </aside>
+  </div>
+</body>
+</html>

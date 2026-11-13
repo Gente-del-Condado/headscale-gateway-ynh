@@ -1,0 +1,7 @@
+Ejecuta un nodo de tu propia red Headscale, publica servicios HTTPS y administra DNS, certificados y copias cifradas desde el panel compartido.
+
+Conecta opcionalmente las aplicaciones del teléfono mediante VpnService. El tráfico privado se cifra entre nodos. Sin nodo de salida, Internet utiliza la conexión habitual; con uno configurado pasa por él. Solo se permite una VPN activa por perfil.
+
+Necesitas tu propio servidor Headscale. No se ofrece un servicio VPN comercial ni anonimato. Sin anuncios ni analítica. Android puede suspender procesos; no sustituye un servidor permanente.
+
+Guarda una copia cifrada antes de cambiar de canal o firma.

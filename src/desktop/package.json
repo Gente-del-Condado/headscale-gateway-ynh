@@ -1,0 +1,24 @@
+{
+  "name": "headscale-gateway-tray",
+  "version": "1.4.7",
+  "private": true,
+  "description": "Cliente independiente de bandeja para Headscale Gateway",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test *.test.cjs",
+    "pack": "node pack.cjs",
+    "smoke": "electron smoke.cjs",
+    "pack:windows": "node pack.cjs win32",
+    "pack:all": "node pack.cjs all"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "@electron/packager": "20.3.0"
+  },
+  "license": "AGPL-3.0-only",
+  "overrides": {
+    "glob": "14.0.4",
+    "minimatch": "11.0.8"
+  }
+}

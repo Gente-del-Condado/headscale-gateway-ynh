@@ -1,0 +1,27 @@
+HEADSCALE GATEWAY — DISTRIBUCIÓN DEL SERVIDOR
+
+El ejecutable de este paquete está en ESTA carpeta, no en bin/.
+Windows (PowerShell):
+  .\headscale-gateway.exe --db "$env:LOCALAPPDATA\HeadscaleGateway\gateway.sqlite"
+Linux:
+  ./headscale-gateway --db "$HOME/.local/share/headscale-gateway/gateway.sqlite"
+
+Panel local: http://127.0.0.1:9091/admin/
+Para actualizar, detén el proceso y sustituye el ejecutable, manteniendo el
+mismo usuario y --db. No borres SQLite, master.key, certificados ni identidad.
+La mini GUI se descarga por separado. No hace falta activar el helper para
+usar portal, federación o API / CLI.
+
+Manual completo: docs/USO_COMPLETO.md. Las órdenes con prefijo bin/ se refieren a la
+estructura del proyecto de fuentes; en este paquete elimina ese prefijo.
+Federación Windows/Linux: docs/FEDERACION_WINDOWS.txt.
+API / CLI: docs/API_CLI_MANUAL.txt.
+
+Recuperar acceso: docs/RECUPERAR_ACCESO.md. El código se muestra solo en una
+terminal interactiva; no está en journalctl ni en los archivos de registro.
+
+Código propio AGPL-3.0-only: LICENSE y NOTICE. Dependencias: NOTICE y third_party/.
+El módulo de suscripción está desactivado en esta distribución normal.
+Para compilarlo activado: docs/SUSCRIPCIONES.md. Al redistribuir la mini GUI,
+conserva sus fuentes y avisos en legal/; consulta docs/LICENCIAS.md.
+La documentación principal se mantiene en español.

@@ -1,0 +1,19 @@
+* text=auto
+*.go text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+packaging/yunohost/scripts/* text eol=lf
+yunohost/scripts/* text eol=lf
+yunohost/payload/headscale-gateway-linux-* binary
+*.cmd text eol=crlf
+*.png binary
+*.zip binary
+*.gz binary
+# Generated install trees must keep the exact checksummed build bytes.
+addons/** -text
+yunohost/** -text

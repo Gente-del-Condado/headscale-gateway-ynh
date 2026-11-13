@@ -1,0 +1,1658 @@
+[
+  {
+    "file": "acme_backoff.go",
+    "line": 57,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-ACME-STATE",
+    "message": "No se pudo consultar el estado ACME en SQLite; se aplaza el intento un minuto: %v"
+  },
+  {
+    "file": "acme_backoff.go",
+    "line": 64,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-ACME-STATE",
+    "message": "Estado ACME ilegible; se aplaza el intento un minuto: %v"
+  },
+  {
+    "file": "acme_backoff.go",
+    "line": 79,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-ACME-BACKOFF-001",
+    "message": "no se puede guardar backoff ACME: %v"
+  },
+  {
+    "file": "acme_backoff.go",
+    "line": 85,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-ACME-BACKOFF-002",
+    "message": "persistencia backoff ACME fallida: %v"
+  },
+  {
+    "file": "acme_backoff.go",
+    "line": 87,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-ACME-BACKOFF-003",
+    "message": "próximo intento para %s a partir de %s (%s)"
+  },
+  {
+    "file": "admin_backup_restore_unix.go",
+    "line": 105,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-RESTORE-READY",
+    "message": "verificación criptográfica y SHA-256 correcta; iniciando modo offline"
+  },
+  {
+    "file": "admin_backup_restore_unix.go",
+    "line": 117,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-RESTORE-ERROR",
+    "message": "reexec: %v"
+  },
+  {
+    "file": "admin_backup_restore_unix.go",
+    "line": 223,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-RESTORE-FULL-DONE",
+    "message": "Restauración integral correcta; estado anterior en %s"
+  },
+  {
+    "file": "admin_backup_restore_unix.go",
+    "line": 259,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-RESTORE-SELECTIVE-DONE",
+    "message": "Restauración selectiva completada"
+  },
+  {
+    "file": "admin_ca_http.go",
+    "line": 44,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-CA-HTTP-LISTEN",
+    "message": "No se pudo abrir HTTP de CA en %s; administración sigue disponible: %v"
+  },
+  {
+    "file": "admin_ca_http.go",
+    "line": 55,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-CA-HTTP-SERVE",
+    "message": "Servidor HTTP de CA detenido: %v"
+  },
+  {
+    "file": "admin_ca_http.go",
+    "line": 58,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-CA-HTTP-READY",
+    "message": "CA pública HTTP LAN disponible en %s; requiere publicación habilitada y aprobación manual del receptor"
+  },
+  {
+    "file": "admin_config_transfer.go",
+    "line": 67,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-CONFIG-IMPORT",
+    "message": "opciones importadas=%d; reinicio requerido"
+  },
+  {
+    "file": "admin_headscale_manage.go",
+    "line": 63,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-HS-ADMIN-001",
+    "message": "operación administrativa Headscale: %s"
+  },
+  {
+    "file": "admin_headscale_policy_dns.go",
+    "line": 20,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-HS-POLICY-READ",
+    "message": "lectura ACL fallida: %v"
+  },
+  {
+    "file": "admin_headscale_policy_dns.go",
+    "line": 34,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-HS-POLICY-INIT-001",
+    "message": "política ACL inicializada explícitamente mediante la API"
+  },
+  {
+    "file": "admin_headscale_policy_dns.go",
+    "line": 36,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-HS-POLICY-001",
+    "message": "política ACL actualizada mediante la API"
+  },
+  {
+    "file": "admin_network_prefs.go",
+    "line": 75,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-TSNET-PREFS",
+    "message": "ajustes actualizados: %d campos; anunciar rutas requiere aprobación en Headscale"
+  },
+  {
+    "file": "admin_policy_templates.go",
+    "line": 125,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ACL-TPL-001",
+    "message": "plantillas ACL importadas: nuevas=%d actualizadas=%d omitidas=%d"
+  },
+  {
+    "file": "admin_restart.go",
+    "line": 26,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-ADMIN-RESTART-001",
+    "message": "reiniciando Gateway: %v"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 91,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-RECOVERY-CODE",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 95,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-RECOVERY-PENDING",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 102,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-RECOVERY-PENDING",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 120,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-ADMIN-SERVER-002",
+    "message": "panel: %v"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 132,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ADMIN-SERVER-003",
+    "message": "Panel en %s; credencial de recuperación protegida en SQLite"
+  },
+  {
+    "file": "admin_server.go",
+    "line": 134,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ADMIN-SERVER-004",
+    "message": "Panel disponible mediante el proxy autorizado; escucha interna: %s"
+  },
+  {
+    "file": "admin_settings.go",
+    "line": 94,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ADMIN-SETTINGS-001",
+    "message": "configuración SQLite validada y guardada: reinicio requerido"
+  },
+  {
+    "file": "admin_template_transfer.go",
+    "line": 114,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-TPL-IMPORT-001",
+    "message": "plantillas importadas: nuevas=%d actualizadas=%d omitidas=%d"
+  },
+  {
+    "file": "admin_template_transfer.go",
+    "line": 154,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-TPL-REPO-001",
+    "message": "configuración de repositorio modificada; acceso_privado=%t"
+  },
+  {
+    "file": "admin_template_transfer.go",
+    "line": 174,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-TPL-SYNC-ERR",
+    "message": "fallo descarga de repositorio: %v"
+  },
+  {
+    "file": "admin_template_transfer.go",
+    "line": 179,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-TPL-SYNC-ERR",
+    "message": "fallo importación: %v"
+  },
+  {
+    "file": "admin_template_transfer.go",
+    "line": 181,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-TPL-SYNC-001",
+    "message": "%s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 85,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-001",
+    "message": "Configurando gestión de certificados..."
+  },
+  {
+    "file": "certificates.go",
+    "line": 97,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-002",
+    "message": "certificates.mode=force-local: usando exclusivamente la CA local"
+  },
+  {
+    "file": "certificates.go",
+    "line": 113,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-003",
+    "message": "Certificado TLS local preparado correctamente"
+  },
+  {
+    "file": "certificates.go",
+    "line": 150,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-004",
+    "message": "certificates.mode=force-acme: ACME obligatorio"
+  },
+  {
+    "file": "certificates.go",
+    "line": 185,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-005",
+    "message": "Solicitando/gestionando certificado ACME para:"
+  },
+  {
+    "file": "certificates.go",
+    "line": 186,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-006",
+    "message": "Nombre incluido en el certificado: %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 187,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-007",
+    "message": "Nombre incluido en el certificado: %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 209,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-008",
+    "message": "Certificado ACME gestionado correctamente"
+  },
+  {
+    "file": "certificates.go",
+    "line": 213,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-009",
+    "message": "certificates.mode=auto: intentando utilizar ACME cuando sea posible"
+  },
+  {
+    "file": "certificates.go",
+    "line": 232,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-CERTIFICATES-010",
+    "message": "configurando proveedor DNS para ACME: %v"
+  },
+  {
+    "file": "certificates.go",
+    "line": 234,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-011",
+    "message": "Proveedor ACME DNS configurado: %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 247,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-012",
+    "message": "Solicitando/gestionando certificado ACME para:"
+  },
+  {
+    "file": "certificates.go",
+    "line": 248,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-013",
+    "message": "Nombre incluido en el certificado: %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 249,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-014",
+    "message": "Nombre incluido en el certificado: %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 259,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-015",
+    "message": "evitando nueva solicitud para %s: límite hasta %s"
+  },
+  {
+    "file": "certificates.go",
+    "line": 264,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-016",
+    "message": "par de certificados almacenados restaurado (principal + wildcard)"
+  },
+  {
+    "file": "certificates.go",
+    "line": 272,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-CERTIFICATES-017",
+    "message": "gestión ACME no completada: %v"
+  },
+  {
+    "file": "certificates.go",
+    "line": 278,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-018",
+    "message": "certificado anterior principal y wildcard reutilizados"
+  },
+  {
+    "file": "certificates.go",
+    "line": 281,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-019",
+    "message": "par almacenado no disponible: %v"
+  },
+  {
+    "file": "certificates.go",
+    "line": 283,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-020",
+    "message": "utilizando CA local hasta el próximo reintento permitido"
+  },
+  {
+    "file": "certificates.go",
+    "line": 287,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-021",
+    "message": "Certificado ACME gestionado correctamente"
+  },
+  {
+    "file": "certificates.go",
+    "line": 292,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-022",
+    "message": "acme.dns_provider=none: ACME DNS-01 no disponible"
+  },
+  {
+    "file": "certificates.go",
+    "line": 299,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-023",
+    "message": "Utilizando CA local como fallback"
+  },
+  {
+    "file": "certificates.go",
+    "line": 404,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-024",
+    "message": "ACME configurado para utilizar DNS-01 con Technitium"
+  },
+  {
+    "file": "certificates.go",
+    "line": 433,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CERTIFICATES-025",
+    "message": "Certificado TLS local preparado correctamente"
+  },
+  {
+    "file": "config_validate.go",
+    "line": 19,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CONFIG-VALIDATE-001",
+    "message": "Validando configuración..."
+  },
+  {
+    "file": "config_validate.go",
+    "line": 327,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-CONFIG-VALIDATE-002",
+    "message": "Configuración validada correctamente (%d servicios)"
+  },
+  {
+    "file": "dns_cleanup.go",
+    "line": 37,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-CLEANUP-001",
+    "message": "Comprobando registros DNS obsoletos del gateway %s..."
+  },
+  {
+    "file": "dns_cleanup.go",
+    "line": 118,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-DNS-CLEANUP-002",
+    "message": "DNS gestionado sin IP válida: %s — no se elimina"
+  },
+  {
+    "file": "dns_cleanup.go",
+    "line": 122,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-CLEANUP-003",
+    "message": "DNS obsoleto detectado: %s A %s"
+  },
+  {
+    "file": "dns_cleanup.go",
+    "line": 137,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-CLEANUP-004",
+    "message": "Limpieza DNS del gateway completada"
+  },
+  {
+    "file": "dns_generation.go",
+    "line": 35,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-DNS-GENERATION-001",
+    "message": "limpieza DNS pendiente para %s: %v"
+  },
+  {
+    "file": "dns_generation.go",
+    "line": 56,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-DNS-GENERATION-002",
+    "message": "no se pudo persistir identidad %s: %v"
+  },
+  {
+    "file": "dns_provider_factory.go",
+    "line": 21,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-PROVIDER-FACTORY-001",
+    "message": "Proveedor DNS desactivado: no se sincronizarán registros DNS"
+  },
+  {
+    "file": "dns_provider_factory.go",
+    "line": 25,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-PROVIDER-FACTORY-002",
+    "message": "Proveedor DNS seleccionado: Cloudflare"
+  },
+  {
+    "file": "dns_provider_factory.go",
+    "line": 29,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-PROVIDER-FACTORY-003",
+    "message": "Proveedor DNS seleccionado: Technitium"
+  },
+  {
+    "file": "dns_records.go",
+    "line": 143,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-DNS-RECORDS-001",
+    "message": "DNS externo detectado: %s A — no se modifica"
+  },
+  {
+    "file": "dns_records.go",
+    "line": 172,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-RECORDS-002",
+    "message": "DNS creado: %s A %s"
+  },
+  {
+    "file": "dns_records.go",
+    "line": 197,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-RECORDS-003",
+    "message": "DNS OK: %s A %s"
+  },
+  {
+    "file": "dns_records.go",
+    "line": 230,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-RECORDS-004",
+    "message": "DNS actualizado: %s A %s -\u003e %s"
+  },
+  {
+    "file": "dns_sync.go",
+    "line": 60,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-SYNC-001",
+    "message": "Sincronizando DNS del gateway..."
+  },
+  {
+    "file": "dns_sync.go",
+    "line": 90,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-SYNC-002",
+    "message": "IP Tailscale del gateway: %s"
+  },
+  {
+    "file": "dns_sync.go",
+    "line": 215,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-DNS-SYNC-003",
+    "message": "DNS del gateway sincronizado correctamente"
+  },
+  {
+    "file": "gateway.go",
+    "line": 53,
+    "channel": "proxy",
+    "level": "Debug",
+    "id": "HGW-PROXY-REQ",
+    "message": "method=%s host=%s"
+  },
+  {
+    "file": "gateway.go",
+    "line": 62,
+    "channel": "proxy",
+    "level": "Trace",
+    "id": "HGW-PROXY-PORTAL",
+    "message": "portal request method=%s"
+  },
+  {
+    "file": "gateway.go",
+    "line": 70,
+    "channel": "proxy",
+    "level": "Warn",
+    "id": "HGW-GATEWAY-001",
+    "message": "Host no encontrado: %s %s"
+  },
+  {
+    "file": "gateway.go",
+    "line": 101,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-GATEWAY-002",
+    "message": "portal de servicios: %v"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 103,
+    "channel": "admin",
+    "level": "Error",
+    "id": "HGW-BACKUP-ERROR",
+    "message": "programada: %v"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 274,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-BACKUP-RETENTION",
+    "message": "retención: %v"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 276,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-BACKUP-OK",
+    "message": "copia cifrada=%s bytes=%d sha256=%s"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 644,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-BACKUP-RETENTION",
+    "message": "retención: %v"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 646,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-BACKUP-IMPORT",
+    "message": "archivo cifrado=%s"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 704,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ACL-RESTORE",
+    "message": "política restaurada explícitamente desde %s"
+  },
+  {
+    "file": "internal/admin/backups.go",
+    "line": 786,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-RESTORE-STAGED",
+    "message": "copia=%s job=%s"
+  },
+  {
+    "file": "internal/admin/middleware_http.go",
+    "line": 38,
+    "channel": "admin",
+    "level": "explicit-variable",
+    "id": "HGW-HTTP-001",
+    "message": "request_id=%d method=%s path=%s status=%d duration_ms=%d"
+  },
+  {
+    "file": "internal/admin/routes_diagnostics.go",
+    "line": 98,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-ADMIN-LOG-002",
+    "message": "parámetros de registro actualizados; nivel=%s"
+  },
+  {
+    "file": "internal/admin/routes_diagnostics.go",
+    "line": 118,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-DEBUG-001",
+    "message": "depuración temporal configurada; minutos=%d"
+  },
+  {
+    "file": "internal/admin/routes_diagnostics.go",
+    "line": 129,
+    "channel": "proxy",
+    "level": "InfoLevel",
+    "id": "HGW-PROXY-CONN-003",
+    "message": "conexiones inactivas cerradas por administración"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 292,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-001",
+    "message": "publicación de CA pública: %t"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 338,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-002",
+    "message": "CA pública recibida, pendiente de verificar: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 371,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-003",
+    "message": "CA aprobada: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 434,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-004",
+    "message": "CA instalada en confianza del sistema: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 468,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-005",
+    "message": "CA retirada del almacén del sistema: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 548,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-LOCAL-TRUST",
+    "message": "CA propia instalada en el SO: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 586,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-LOCAL-REMOVE",
+    "message": "CA retirada del almacén local: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 593,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-PKI-LOCAL-TRUST",
+    "message": "CA propia retirada del SO: %s"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 643,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-PKI-SYNC",
+    "message": "Sincronización pendiente para peer=%s: %v"
+  },
+  {
+    "file": "internal/admin/routes_pki.go",
+    "line": 647,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-PKI-SYNC",
+    "message": "No se pudo guardar el estado peer=%s: %v"
+  },
+  {
+    "file": "internal/admin/server.go",
+    "line": 217,
+    "channel": "admin",
+    "level": "InfoLevel",
+    "id": "HGW-AUDIT-001",
+    "message": "actor=%q area=%q action=%q outcome=%q"
+  },
+  {
+    "file": "listener_local.go",
+    "line": 28,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LISTENER-LOCAL-001",
+    "message": "Abriendo listener HTTPS LAN en %s..."
+  },
+  {
+    "file": "listener_local.go",
+    "line": 47,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LISTENER-LOCAL-002",
+    "message": "Listener HTTPS LAN activo en %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 101,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-001",
+    "message": "CA local encontrada: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 129,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-002",
+    "message": "CA local no encontrada; generando nueva CA..."
+  },
+  {
+    "file": "localca.go",
+    "line": 226,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-003",
+    "message": "CA local creada: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 227,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-004",
+    "message": "CA local válida hasta: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 344,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-005",
+    "message": "CA local cargada correctamente: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 345,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-006",
+    "message": "CA local válida hasta: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 427,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-007",
+    "message": "Certificado local válido: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 428,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-008",
+    "message": "Certificado local válido hasta: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 431,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOCALCA-009",
+    "message": "%s"
+  },
+  {
+    "file": "localca.go",
+    "line": 436,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOCALCA-010",
+    "message": "Certificado local no utilizable: %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 437,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-011",
+    "message": "Generando un nuevo certificado local firmado por la CA existente..."
+  },
+  {
+    "file": "localca.go",
+    "line": 440,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOCALCA-012",
+    "message": "existe %s pero falta %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 443,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-013",
+    "message": "Generando un nuevo certificado local..."
+  },
+  {
+    "file": "localca.go",
+    "line": 446,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOCALCA-014",
+    "message": "existe %s pero falta %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 449,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-015",
+    "message": "Generando un nuevo certificado local..."
+  },
+  {
+    "file": "localca.go",
+    "line": 452,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-016",
+    "message": "Certificado local no encontrado; generando uno nuevo..."
+  },
+  {
+    "file": "localca.go",
+    "line": 799,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-017",
+    "message": "Certificado local generado para %s"
+  },
+  {
+    "file": "localca.go",
+    "line": 800,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOCALCA-018",
+    "message": "Certificado local válido hasta: %s"
+  },
+  {
+    "file": "main.go",
+    "line": 54,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-001",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 61,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-002",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 67,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-003",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 72,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-RESTORE-ERROR",
+    "message": "%v"
+  },
+  {
+    "file": "main.go",
+    "line": 75,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-005",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 84,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-LOG-001",
+    "message": "no se pudo abrir el archivo de log: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 87,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-START-001",
+    "message": "registro inicializado; archivo=%s"
+  },
+  {
+    "file": "main.go",
+    "line": 88,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-LOG-LEVEL",
+    "message": "nivel=%s; modo=%s"
+  },
+  {
+    "file": "main.go",
+    "line": 91,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-008",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 99,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-RESTORE-ERR",
+    "message": "restauración cancelada: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 107,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-010",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 114,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-011",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 118,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-012",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 127,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-013",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 132,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-014",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "main.go",
+    "line": 143,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-MAIN-015",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "portal_discovery.go",
+    "line": 36,
+    "channel": "admin",
+    "level": "Warn",
+    "id": "HGW-DISCOVERY-LAN",
+    "message": "Anuncio LAN no disponible: %v"
+  },
+  {
+    "file": "proxy.go",
+    "line": 59,
+    "channel": "proxy",
+    "level": "Warn",
+    "id": "HGW-PROXY-001",
+    "message": "ignorando servicio %q: URL inválida %q: %v"
+  },
+  {
+    "file": "proxy.go",
+    "line": 89,
+    "channel": "proxy",
+    "level": "InfoLevel",
+    "id": "HGW-PROXY-002",
+    "message": "Proxy: https://%s -\u003e %s"
+  },
+  {
+    "file": "proxy.go",
+    "line": 163,
+    "channel": "proxy",
+    "level": "Error",
+    "id": "HGW-PROXY-003",
+    "message": "proxy [%s] %s %s: %v"
+  },
+  {
+    "file": "proxy.go",
+    "line": 183,
+    "channel": "proxy",
+    "level": "Debug",
+    "id": "HGW-PROXY-004",
+    "message": "Proxy [%s] -\u003e HTTP %d"
+  },
+  {
+    "file": "proxy.go",
+    "line": 204,
+    "channel": "proxy",
+    "level": "Error",
+    "id": "HGW-PROXY-005",
+    "message": "proxy %s: %v"
+  },
+  {
+    "file": "proxy.go",
+    "line": 252,
+    "channel": "proxy",
+    "level": "Trace",
+    "id": "HGW-PROXY-TRACE",
+    "message": "forward service=%q method=%s"
+  },
+  {
+    "file": "proxy.go",
+    "line": 271,
+    "channel": "proxy",
+    "level": "explicit-variable",
+    "id": "HGW-PROXY-HTTP",
+    "message": "service=%q status=%d"
+  },
+  {
+    "file": "proxy.go",
+    "line": 283,
+    "channel": "proxy",
+    "level": "InfoLevel",
+    "id": "HGW-PROXY-006",
+    "message": "Proxy configurado: https://%s.%s -\u003e %s"
+  },
+  {
+    "file": "reload.go",
+    "line": 34,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-RELOAD-001",
+    "message": "SQLite reload: %v"
+  },
+  {
+    "file": "reload.go",
+    "line": 41,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-RELOAD-002",
+    "message": "SQLite reload: %v"
+  },
+  {
+    "file": "reload.go",
+    "line": 49,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-RELOAD-003",
+    "message": "recarga SQL rechazada: %v"
+  },
+  {
+    "file": "runtime.go",
+    "line": 177,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-RUNTIME-001",
+    "message": "Generación HTTPS activada: %s"
+  },
+  {
+    "file": "runtime.go",
+    "line": 254,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-RUNTIME-002",
+    "message": "certificado público instalado para %s sin reiniciar el Gateway"
+  },
+  {
+    "file": "runtime.go",
+    "line": 265,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-RUNTIME-003",
+    "message": "actualización ACME aplazada: %v"
+  },
+  {
+    "file": "runtime_reload.go",
+    "line": 59,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-RUNTIME-RELOAD-001",
+    "message": "rollback DNS fallido: %v"
+  },
+  {
+    "file": "runtime_reload.go",
+    "line": 66,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-RUNTIME-RELOAD-002",
+    "message": "Recarga manual completada: %d servicios activos"
+  },
+  {
+    "file": "startup_firewall.go",
+    "line": 21,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-FIREWALL",
+    "message": "diagnóstico no disponible: %v"
+  },
+  {
+    "file": "startup_firewall.go",
+    "line": 25,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-FIREWALL",
+    "message": "HTTPS LAN %s: %s. Revisa Configuración → Cortafuegos. No se ha modificado ninguna regla."
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 20,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-001",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 29,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-002",
+    "message": "%v; active admin.enabled para configurar el Gateway"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 33,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-003",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 39,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-004",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 42,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-005",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 44,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-STARTUP-GATEWAY-006",
+    "message": "%v. Solo API/panel activos; VPN, TLS, DNS y proxy no se iniciaron"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 53,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-007",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 58,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-DEPLOYMENT",
+    "message": "%v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 62,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-DEPLOYMENT",
+    "message": "%v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 66,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-008",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 70,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-009",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 78,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-010",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 87,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-011",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 91,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-012",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 96,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-013",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 106,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-017",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 114,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-014",
+    "message": "No se puede continuar: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 116,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LAN-PORT-BUSY",
+    "message": "HTTPS LAN no disponible; cambia su puerto desde administración y reinicia: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 123,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-STARTUP-GATEWAY-015",
+    "message": "HTTPS LAN: %v"
+  },
+  {
+    "file": "startup_gateway.go",
+    "line": 126,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-STARTUP-GATEWAY-016",
+    "message": "HTTPS LAN activo en %s; dominio inicial %s"
+  },
+  {
+    "file": "startup_logging.go",
+    "line": 23,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOG-002",
+    "message": "leer configuración: %v"
+  },
+  {
+    "file": "startup_logging.go",
+    "line": 28,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOG-004",
+    "message": "nivel inválido: %v"
+  },
+  {
+    "file": "startup_logging.go",
+    "line": 32,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-LOG-003",
+    "message": "ajustes guardados de log rechazados: %v"
+  },
+  {
+    "file": "tailscale.go",
+    "line": 35,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-001",
+    "message": "Iniciando tsnet..."
+  },
+  {
+    "file": "tailscale.go",
+    "line": 58,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TSNET-DETAIL",
+    "message": "Detalle de tsnet: %s"
+  },
+  {
+    "file": "tailscale.go",
+    "line": 94,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-003",
+    "message": "tsnet iniciado correctamente"
+  },
+  {
+    "file": "tailscale.go",
+    "line": 179,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-004",
+    "message": "Identidad Tailscale real: %s"
+  },
+  {
+    "file": "tailscale.go",
+    "line": 242,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-005",
+    "message": "Estado Tailscale: %s"
+  },
+  {
+    "file": "tailscale.go",
+    "line": 247,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-006",
+    "message": "Almacén CertMagic: %s"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 147,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-IDENTITY-001",
+    "message": "Identidad Tailscale guardada: %s"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 335,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-TAILSCALE-IDENTITY-002",
+    "message": "identidad Tailscale persistida %q diferente de la asignada por Headscale %q; se conserva la identidad persistida para evitar cambios de dominio y certificados"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 339,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-IDENTITY-003",
+    "message": "Identidad Tailscale persistida confirmada por Headscale: %s"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 351,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-TAILSCALE-IDENTITY-004",
+    "message": "no se pudo obtener la identidad Tailscale de Headscale: %v"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 361,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-TAILSCALE-IDENTITY-005",
+    "message": "Identidad Tailscale persistida: %s"
+  },
+  {
+    "file": "tailscale_identity.go",
+    "line": 370,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-TAILSCALE-IDENTITY-006",
+    "message": "identidad Tailscale no disponible; usando hostname provisional para LAN: %s"
+  },
+  {
+    "file": "utils.go",
+    "line": 118,
+    "channel": "gateway",
+    "level": "Debug",
+    "id": "HGW-UTILS-001",
+    "message": "normalizeHost: %q -\u003e %q"
+  },
+  {
+    "file": "utils.go",
+    "line": 198,
+    "channel": "gateway",
+    "level": "Debug",
+    "id": "HGW-UTILS-002",
+    "message": "normalizeDNSName: %q -\u003e %q"
+  },
+  {
+    "file": "utils.go",
+    "line": 266,
+    "channel": "gateway",
+    "level": "Debug",
+    "id": "HGW-UTILS-003",
+    "message": "normalizeServiceName: %q -\u003e %q"
+  },
+  {
+    "file": "utils.go",
+    "line": 302,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-UTILS-004",
+    "message": "data_dir configurado: %s"
+  },
+  {
+    "file": "utils.go",
+    "line": 336,
+    "channel": "gateway",
+    "level": "Debug",
+    "id": "HGW-UTILS-005",
+    "message": "Directorio existente: %s"
+  },
+  {
+    "file": "utils.go",
+    "line": 366,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-UTILS-006",
+    "message": "Directorio creado: %s (0700)"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 64,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-001",
+    "message": "VPN no disponible: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 71,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-002",
+    "message": "identidad VPN no disponible: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 77,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-003",
+    "message": "DNSName VPN inválido: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 83,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-004",
+    "message": "listener VPN: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 95,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-005",
+    "message": "VPN sin publicar: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 101,
+    "channel": "gateway",
+    "level": "InfoLevel",
+    "id": "HGW-VPN-SUPERVISOR-006",
+    "message": "VPN activa en :443 para %s"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 117,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-007",
+    "message": "listener VPN finalizado"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 128,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-008",
+    "message": "comprobación VPN fallida (%d/%d): %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 151,
+    "channel": "gateway",
+    "level": "Warn",
+    "id": "HGW-VPN-SUPERVISOR-009",
+    "message": "transición de identidad aplazada: %v"
+  },
+  {
+    "file": "vpn_supervisor.go",
+    "line": 190,
+    "channel": "gateway",
+    "level": "Error",
+    "id": "HGW-VPN-SUPERVISOR-010",
+    "message": "HTTPS VPN: %v"
+  }
+]

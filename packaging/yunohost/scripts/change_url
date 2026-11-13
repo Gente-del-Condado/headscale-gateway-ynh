@@ -1,0 +1,19 @@
+#!/bin/bash
+# shellcheck disable=SC1091,SC2154,SC2034
+# YunoHost inyecta los ajustes y las funciones auxiliares en el entorno del script.
+source _common.sh
+source /usr/share/yunohost/helpers
+
+ynh_systemctl --service="$app" --action=stop
+path="$new_path"
+domain="$new_domain"
+hgw_configure
+ynh_config_change_url_nginx
+ynh_config_add_nginx
+if [[ "$old_domain" != "$new_domain" ]]; then
+    rm -f -- "/etc/nginx/conf.d/$old_domain.d/$app-proxy-auth.inc"
+fi
+# Solo cambia el punto de montaje de la administración web. El dominio base
+# Headscale y la identidad VPN siguen bajo control del usuario y se conservan.
+ynh_systemctl --service="$app" --action=start
+ynh_systemctl --service=nginx --action=reload

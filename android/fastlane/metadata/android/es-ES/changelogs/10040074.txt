@@ -1,0 +1,1 @@
+1.4.7: motor Go compartido, firma estable, target API 36 y preparación de canales F-Droid/Play.

@@ -1,0 +1,1 @@
+1.4.7: shared Go engine, stable signing, target API 36 and F-Droid/Play channel preparation.

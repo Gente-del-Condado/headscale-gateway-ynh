@@ -1,0 +1,15 @@
+configuration:
+  admin_username:
+    name: Initial administrator
+    description: Optional direct-access account. Ingress uses your Home Assistant administrator session.
+  admin_password:
+    name: Initial password
+    description: Optional, 12-72 bytes. Not needed for Ingress. Does not reset existing accounts.
+  node_name:
+    name: Stable node name
+    description: Keep this unchanged after joining Headscale.
+  lan_port:
+    name: Initial LAN HTTPS port
+    description: After setup, change the listener in the Gateway panel.
+  log_level:
+    name: Log level

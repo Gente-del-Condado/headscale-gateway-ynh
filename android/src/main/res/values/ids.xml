@@ -1,0 +1,10 @@
+<resources>
+    <item name="nav_home" type="id"/>
+    <item name="nav_panel" type="id"/>
+    <item name="nav_help" type="id"/>
+    <item name="gateway_toggle" type="id"/>
+    <item name="vpn_toggle" type="id"/>
+    <item name="panel_webview" type="id"/>
+    <item name="panel_sections" type="id"/>
+    <item name="panel_placeholder" type="id"/>
+</resources>

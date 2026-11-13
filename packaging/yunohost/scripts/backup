@@ -1,0 +1,28 @@
+#!/bin/bash
+# shellcheck disable=SC1091,SC2154,SC2034
+# YunoHost inyecta los ajustes y las funciones auxiliares en el entorno del script.
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+
+# ynh_backup solo declara copias futuras. Captura los datos con el servicio
+# parado directamente en el directorio del archivo, como un volcado de base,
+# y reinicia después. Incluye SQLite también en las copias previas a actualizar.
+was_running=0
+if systemctl is-active --quiet "$app"; then
+    was_running=1
+    ynh_systemctl --service="$app" --action=stop
+fi
+restart_gateway() {
+    if [[ "$was_running" == 1 ]]; then systemctl start "$app"; fi
+}
+trap restart_gateway EXIT
+tar --create --file=gateway-data.tar --directory="$data_dir" .
+chmod 0600 gateway-data.tar
+restart_gateway
+trap - EXIT
+ynh_backup "$install_dir"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+if [[ -f "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc" ]]; then
+    ynh_backup "/etc/nginx/conf.d/$domain.d/$app-proxy-auth.inc"
+fi
+ynh_backup "/etc/systemd/system/$app.service"

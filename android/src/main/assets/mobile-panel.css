@@ -1,0 +1,22 @@
+/* Solo se inyecta en el WebView Android. El panel y sus formularios son comunes. */
+body.android-container>header{display:none}
+body.android-container{font-size:15px;background:#101827}
+.android-container main{padding:12px;max-width:1200px}
+.android-container #app{padding-left:0}
+.android-container #app>.main-navigation{display:none}
+.android-container .card{padding:16px;border-radius:16px;margin-bottom:14px}
+.android-container #login{margin:12px auto}
+.android-container button,.android-container .button-link{min-height:44px}
+.android-container input:not([type=checkbox]),.android-container select{min-height:44px;font-size:16px}
+.android-container textarea{font-size:14px}
+.android-container .tablewrap,.android-container .table-scroll{overflow-x:auto;max-width:100%;overscroll-behavior-x:contain}
+.android-container .toast-stack{max-height:40vh;overflow-y:auto}
+@media(max-width:600px){
+ .android-container .grid{grid-template-columns:minmax(0,1fr)}
+ .android-container .heading,.android-container .workspace-heading{flex-wrap:wrap;gap:10px}
+ .android-container .heading>*,.android-container .grid>*{min-width:0;max-width:100%}
+ .android-container .heading h2{font-size:20px}
+ .android-container .reference-layout{grid-template-columns:minmax(0,1fr)}
+ .android-container .restart-banner{flex-wrap:wrap}
+ .android-container pre{max-width:100%;overflow-x:auto}
+}

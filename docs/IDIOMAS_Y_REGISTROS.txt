@@ -1,0 +1,84 @@
+IDIOMAS Y REGISTROS — 25/10/2026
+
+Documentación del proyecto
+-------------------------
+El manual y las guías de instalación, uso, actualización y recuperación se
+mantienen en español, incluidas las páginas que muestran Home Assistant y
+YunoHost. La guía general está en docs/USO_COMPLETO.md. Los identificadores de configuración, comandos y nombres
+de protocolos conservan su escritura técnica.
+
+La aplicación sigue admitiendo sus idiomas de interfaz y registros, que se
+eligen de forma independiente de la documentación. Los avisos legales y las
+licencias de terceros se conservan en su redacción original.
+
+Formato de los registros nuevos
+------------------------------
+[HGW] fecha UTC [INFORMACIÓN] [HGW-START-001] mensaje
+[HGW-PROXY] fecha UTC [ADVERTENCIA] [HGW-PROXY-HTTP] service="ejemplo" status=404
+
+Los cinco niveles visibles en español son ERROR, ADVERTENCIA, INFORMACIÓN,
+DEPURACIÓN y TRAZA. En inglés: ERROR, WARNING, INFORMATION, DEBUG y TRACE.
+Cada evento propio declara canal, nivel e identificador. Las líneas de un
+mensaje multilínea repiten nivel e identificador. Se redactan credenciales
+antes de escribir tanto a consola como a archivos.
+
+No se deduce el nivel buscando palabras en el mensaje. No hay conversión de
+WARN, [WARN ], WARNING: ni de registros históricos. Los nombres internos de
+configuración/API (error, warn, info, debug, trace) no son etiquetas visibles.
+El archivo docs/eventos-log.json enumera los eventos y sus ubicaciones.
+Auditoría: go -C src run -buildvcs=false ./tools/log-catalog
+
+Los mensajes de bibliotecas sin nivel estructurado se identifican como
+HGW-EXTERNAL-STDLOG; los detalles de tsnet como HGW-TSNET-DETAIL.
+Se preservan sus detalles técnicos originales (incluidos errores del SO);
+no se inventa una severidad a partir de sus frases. La salida nativa de
+Chromium/Electron no forma parte de gateway.log, proxy.log o admin.log.
+
+El visor filtra por severidad acumulativa, texto y prefijo de identificador
+de evento (por ejemplo HGW-PROXY o HGW-PROXY-HTTP). Fecha y zona horaria son
+opciones del visor; el archivo conserva UTC. La API publica las etiquetas
+de todos los idiomas compilados para que el filtro también admita idiomas
+añadidos en el futuro.
+
+Idioma
+------
+Panel: selector de idioma; se recuerda en este navegador.
+Mini GUI: selector Idioma; se guarda junto a las preferencias de conexión.
+Afecta a interfaz, menú de bandeja y notificaciones.
+Servidor/CLI: variable GATEWAY_LANG=en antes de arrancar, o es para español.
+Cada proceso conserva su elección; cambiar el panel no cambia el idioma de
+los registros del servidor ni reescribe eventos anteriores.
+
+Catálogos: src/locale/*.po (editables con Poedit). Español es el idioma fuente;
+es.json vacío es intencionado, no implica que falten traducciones españolas.
+La misma compilación genera los catálogos embebidos del servidor/panel y
+src/desktop/locales para la mini GUI. No editar los JSON generados a mano.
+
+Añadir un idioma, por ejemplo francés:
+  python3 tools/add_language.py fr
+  [abrir src/locale/fr.po en Poedit y traducir]
+  python3 tools/check_i18n.py
+  go -C src build -buildvcs=false -o headscale-gateway .
+  node src/desktop/pack.cjs linux
+  node src/desktop/pack.cjs win32
+
+El idioma aparecerá automáticamente después de actualizar los ejecutables.
+Las entradas todavía no traducidas de idiomas nuevos usan el español.
+El inglés exige cobertura completa del catálogo extraído; el comprobador
+también detecta cambios de variables %s, %d, %v y {nombre}. No traducir
+nombres técnicos, claves de configuración, nombres de archivo ni comandos.
+Mantener el significado y el orden de los parámetros de formato Go.
+
+Mantenimiento
+-------------
+Al añadir texto dinámico de interfaz, usar:
+  window.tr('Página {page} de {total}', {page: pagina, total: paginas})
+No concatenar frases traducibles con números o nombres.
+Al añadir registros, usar diagnostics.Emit con nivel explícito, identificador
+HGW-* estable y plantilla española literal. Emit traduce antes de formatear.
+Después de modificar registros:
+  go -C src run -buildvcs=false ./tools/log-catalog
+  python3 tools/check_i18n.py
+
+Los errores técnicos externos, nombres de equipos, políticas ACL y datos
+introducidos por usuarios se conservan como datos, sin traducirlos.

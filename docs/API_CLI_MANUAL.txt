@@ -1,0 +1,62 @@
+SISTEMA → API / CLI
+
+El índice se obtiene de las rutas que registra esta versión del servidor. No es
+una tabla mantenida a mano. El catálogo de contratos, opciones e integraciones
+se regenera con tools/reference_catalog.py y CI comprueba que no esté obsoleto.
+
+1. Abre Sistema → API / CLI y usa Buscar en el índice.
+2. Tipo permite cambiar entre API Gateway, CLI e Integraciones externas.
+3. Para API, combina el texto con el método y el módulo. Pulsa una operación.
+4. Revisa el alcance, roles, tipo de autenticación y el contrato del código.
+   Los campos detectados pueden ser de entrada o salida: no son un esquema
+   OpenAPI. Los tipos completos están en el archivo fuente indicado.
+5. Expande el ejemplo curl o PowerShell. Los tokens son variables de entorno,
+   nunca el valor que hayas introducido en el panel.
+6. Ir al probador prepara la petición. No envía nada automáticamente.
+7. En modo Guiada rellena los parámetros de la ruta; en Manual puedes escribir
+   una ruta relativa registrada. El JSON se valida antes de enviar.
+8. Usa tu sesión o un token de prueba con permisos mínimos. Confirmar una
+   modificación no evita los controles de rol, scopes, política Bearer o CSRF.
+9. Pulsa Ejecutar. Comprueba estado HTTP, duración, tipo de contenido y respuesta.
+10. Limpiar resultado y token retira el contenido mostrado y la credencial de
+    prueba. No se mantiene un historial persistente de peticiones.
+
+Prueba segura inicial: GET /api/v1/status. Después GET /api/v1/network/nodes
+con un token viewer/read+network. No pruebes DELETE, restauraciones, rotación
+de claves, cambios ACL o reinicios para comprobar solamente que la API responde.
+Esas operaciones hacen cambios reales cuando están autorizadas.
+
+Peer federado: registra y aprueba el origen principal en CA y confianza; activa
+la federación del portal. Actualiza el índice y elígelo en Destino. Solo se
+consulta /.well-known/headscale-gateway; TLS se valida usando confianza aprobada,
+con los límites de la federación y sin reenviar cookies/tokens administrativos.
+Para otras API del equipo remoto abre su propio panel y autentícate allí.
+
+Las API de Technitium/Cloudflare/Headscale se documentan según el código de sus
+adaptadores. El servidor no proporciona un proxy libre contra esos proveedores.
+Technitium utiliza GET también para cambios: no confundas el verbo con lectura.
+Los métodos SDK internos de Tailscale/ACME/OIDC/LDAP no son rutas REST locales.
+
+El visor limita respuestas a 1 MiB y 45 segundos, no sigue redirecciones ni
+reintenta automáticamente. Si una modificación tarda más, comprueba el estado:
+cerrar o agotar la espera no revierte una petición ya recibida por el servidor.
+
+Actualizar documentación al desarrollar:
+  python3 tools/reference_catalog.py
+  python3 tools/extract_i18n.py
+  python3 tools/check_i18n.py
+  ./tools/verify.sh
+  HGW_REFERENCE_EXPORT=/tmp/hgw-reference-catalog.json go -C src test ./internal/admin -run TestReferenceMatchesRegisteredRoutes -count=1
+
+La última orden exporta un catálogo desde una instancia de prueba sin datos
+reales. Sirve para la prueba visual src/tools/gui-linux-check/panel.cjs. No utiliza
+las credenciales de producción. API_CLI.json es la copia documental de la entrega.
+
+Módulo comercial opcional
+-------------------------
+GET /api/v1/status añade subscription: enabled, state, allowed y, cuando procede,
+instance_id, expires_at y grace_until (segundos Unix UTC). La compilación normal
+lo devuelve desactivado. La activación/renovación se realiza con un archivo firmado
+subscription.license en data_dir, no con un token Bearer ni una clave Headscale.
+El comando de emisión src/tools/license-admin es una herramienta separada; no forma parte
+del CLI del Gateway ni representa un proveedor de cobro. Véase SUSCRIPCIONES.md.

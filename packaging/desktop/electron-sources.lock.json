@@ -1,0 +1,47 @@
+{
+  "format": 1,
+  "electron_version": "45.0.0",
+  "electron_commit": "54f961b44b83e4ece81065ab60a182fd0c38c01e",
+  "chromium_version": "156.0.8078.48",
+  "node_version": "24.22.0",
+  "sources": [
+    {
+      "name": "chromium-156.0.8078.48.tar.xz",
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-156.0.8078.48.tar.xz",
+      "sha256": "534ae40171f394650b89e33716be4a450c78d93a862e2b0e4fae03113e10f90b",
+      "size": 4422488124
+    },
+    {
+      "name": "electron-45.0.0.tar.gz",
+      "url": "https://codeload.github.com/electron/electron/tar.gz/54f961b44b83e4ece81065ab60a182fd0c38c01e",
+      "sha256": "a23aa90170dc1ea5d999e2dd1ffeedf0ae836498b081dfaad0ba5aa5a772aa3f",
+      "size": 20249510
+    },
+    {
+      "name": "node-v24.22.0.tar.xz",
+      "url": "https://nodejs.org/dist/v24.22.0/node-v24.22.0.tar.xz",
+      "sha256": "41f97cff2c666f1f8293dc5f85c65e8dd605c16b43fd9febd49ede32ee1e0329",
+      "size": 57606320
+    },
+    {
+      "name": "nan-675cefebca42410733da8a454c8d9391fcebfbc2.tar.gz",
+      "url": "https://codeload.github.com/nodejs/nan/tar.gz/675cefebca42410733da8a454c8d9391fcebfbc2",
+      "sha256": "3983c68f19ed75dd37dc228eab385093ae2533132730f253f0c3d19ff10788e3",
+      "size": 111323
+    }
+  ],
+  "runtimes": {
+    "linux": {
+      "name": "electron-v45.0.0-linux-x64.zip",
+      "url": "https://github.com/electron/electron/releases/download/v45.0.0/electron-v45.0.0-linux-x64.zip",
+      "sha256": "22f6a10bd3f7fef987ddbb379d3375ce664ad0c98a9a50f80c89f1718a0c3e3a",
+      "size": 123909792
+    },
+    "win32": {
+      "name": "electron-v45.0.0-win32-x64.zip",
+      "url": "https://github.com/electron/electron/releases/download/v45.0.0/electron-v45.0.0-win32-x64.zip",
+      "sha256": "ae53887a23bb640369c93dbd38c408a2af5c0deb86f2fa76c6c244cb444b7f47",
+      "size": 158223852
+    }
+  }
+}

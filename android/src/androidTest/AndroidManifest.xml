@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider android:name="org.headscalegateway.android.LabDocumentsProvider" android:authorities="org.headscalegateway.android.pruebas.documentos" android:exported="true" android:grantUriPermissions="true"/>
+    </application>
+</manifest>

@@ -1,0 +1,9 @@
+{
+  "listen_addr": "127.0.0.1:9091",
+  "base_path": "",
+  "base_path_header": "",
+  "trusted_proxies": [],
+  "allow_frame": false,
+  "node_name": "gateway",
+  "lan_listen_addr": "0.0.0.0:8443"
+}
