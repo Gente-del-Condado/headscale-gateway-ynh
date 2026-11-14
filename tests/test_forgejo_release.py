@@ -4,6 +4,7 @@ import http.server
 import importlib.util
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import threading
@@ -99,7 +100,7 @@ class ReleaseTest(unittest.TestCase):
                 if path.endswith('/branches/main'): return {'commit': {'id': 'a'*40}}
                 if path == module.API+'/tags/v1.4.7': return None if missing else {'commit': {'sha': 'a'*40}}
                 if missing: return None
-                if '?limit=' in path: return []
+                if path.endswith('/assets'): return []
                 if method == 'POST': return {'id': 4, 'draft': True}
                 if method == 'GET': return {'id': 4, 'draft': False, 'tag_name': 'v1.4.7'}
             def upload(self, release_id, file):
@@ -118,6 +119,54 @@ class ReleaseTest(unittest.TestCase):
             events.clear()
             module.publish('/fixture', 'v1.4.7', 'a'*40, Client(), draft_only=True)
             self.assertFalse(any(method == 'PATCH' for method, _ in events))
+
+    def test_existing_attachments_are_listed_once_without_pagination(self):
+        asset = {'name': 'artifact.zip', 'bytes': 7, 'sha256': 'a'*64}
+        events = []
+        class Client:
+            def request(self, method, path, data=None, missing=False):
+                events.append((method, path))
+                if path.endswith('/branches/main'): return {'commit': {'id': 'a'*40}}
+                if path == module.API+'/tags/v1.4.7': return {'commit': {'sha': 'a'*40}}
+                if path.endswith('/assets'): return [{'name': 'artifact.zip'}]
+                if path.endswith('/releases/tags/v1.4.7'): return {'id': 4, 'draft': True}
+                if method == 'GET': return {'id': 4, 'draft': False, 'tag_name': 'v1.4.7'}
+            def upload(self, *args):
+                raise AssertionError('No debe subir un adjunto ya existente')
+            def verify(self, remote, expected):
+                events.append(('verify', expected['name']))
+        with patch.object(module, 'load_manifest', return_value={'assets': [asset], 'body': 'Notas'}):
+            module.publish('/fixture', 'v1.4.7', 'a'*40, Client())
+        self.assertEqual(events.count(('GET', module.API+'/releases/4/assets')), 1)
+        self.assertIn(('verify', 'artifact.zip'), events)
+        self.assertFalse(any('?page=' in path or '?limit=' in path for _, path in events))
+
+    def test_retry_preserves_tag_and_rejects_product_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repo = Path(temporary)
+            def git(*args):
+                return subprocess.check_output(['git', '-C', temporary, *args], text=True,
+                                               stderr=subprocess.DEVNULL).strip()
+            git('init', '-q'); git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
+            (repo/'VERSION').write_text('1.4.7')
+            git('add', '.'); git('commit', '-qm', 'Producto'); git('tag', 'v1.4.7')
+            original = git('rev-parse', 'HEAD')
+            (repo/'tools').mkdir(); (repo/'tools/publish_forgejo_release.py').write_text('# Arreglo')
+            git('add', '.'); git('commit', '-qm', 'Publicador')
+            head = git('rev-parse', 'HEAD')
+            self.assertEqual(module.resolve_release_commit('v1.4.7', head, repository=repo), original)
+            self.assertEqual(git('rev-parse', 'v1.4.7'), original)
+            with self.assertRaises(ValueError):
+                module.resolve_release_commit('v1.4.8', head, repository=repo)
+            self.assertEqual(module.resolve_release_commit('v1.4.8', head, True, repo), head)
+            (repo/'src').mkdir(); (repo/'src/main.go').write_text('// Motor distinto')
+            git('add', '.'); git('commit', '-qm', 'Motor')
+            with self.assertRaises(ValueError):
+                module.resolve_release_commit('v1.4.7', git('rev-parse', 'HEAD'), repository=repo)
+            git('checkout', '--orphan', 'unrelated'); git('commit', '-qm', 'Otra historia')
+            with self.assertRaises(ValueError):
+                module.resolve_release_commit('v1.4.7', git('rev-parse', 'HEAD'), repository=repo)
 
     def test_remote_metadata_cannot_send_token_to_another_host(self):
         expected = {'name': 'artifact.zip', 'bytes': 7,

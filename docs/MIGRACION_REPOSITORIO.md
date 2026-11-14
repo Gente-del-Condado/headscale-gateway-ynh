@@ -78,7 +78,7 @@ El administrador prepara esa carpeta y sus archivos como propiedad de root,
 con lectura para el usuario del runner y sin escritura de grupo u otros.
 `release-assets.json` declara `tag`, `source_commit`, `body` (notas revisadas)
 y una lista `assets` de objetos con `name`, `bytes` y `sha256`. El commit debe
-coincidir exactamente con la etiqueta y el `main` actual. No se admiten enlaces,
+coincidir exactamente con la etiqueta, que debe pertenecer al `main` aprobado. No se admiten enlaces,
 archivos adicionales, nombres repetidos, rutas dentro de los nombres ni partes
 de más de 2.100.000.000 bytes. La carpeta y sus antecesores deben estar protegidos.
 
@@ -86,7 +86,9 @@ de más de 2.100.000.000 bytes. La carpeta y sus antecesores deben estar protegi
 trabajo y la API local de Forgejo en `127.0.0.1:6000`. Mantiene la entrega en
 borrador hasta descargar cada adjunto y comprobar su tamaño y SHA-256. Un error
 detiene la publicación. Una repetición reutiliza solo adjuntos que se verifican;
-no elimina archivos ni sobrescribe una release publicada. No guarda tokens ni
+no elimina archivos ni sobrescribe una release publicada. La API de Forgejo 17
+devuelve todos los adjuntos en una consulta; este recurso no se pagina.
+No guarda tokens ni
 los envía a direcciones indicadas en las respuestas HTTP.
 
 Los escritorios incluyen los fuentes y avisos completos del runtime. Si el
@@ -103,6 +105,15 @@ no publica la release ni crea la etiqueta Git. Solo después de confirmar
 `BORRADOR_VERIFICADO_SIN_PUBLICAR` se envía la etiqueta; el trabajo automático
 revalida los adjuntos y publica. Esta preparación manual no sustituye ni
 dispara los flujos automáticos de Mis-app y GitHub Pages.
+
+Si falla exclusivamente la infraestructura de publicación, corrige el publicador
+mediante una solicitud revisada y fusionada en Forgejo. Después ejecuta el flujo
+sobre `main` con la etiqueta original y «Publicar la etiqueta existente» activado.
+Repite seguridad, pruebas y descarga de todos los adjuntos. Conserva la etiqueta
+y los paquetes originales: solo permite cambios posteriores en el publicador,
+su flujo, sus pruebas, esta guía y `CONTENIDO.sha256`. Rechaza cambios en el
+producto o una etiqueta que no sea antecesora del `main` ejecutado. La casilla
+permanece desactivada por defecto para preparar borradores sin publicarlos.
 
 ## Exportar una carpeta o un ZIP limpio
 

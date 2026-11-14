@@ -2,7 +2,8 @@
 """Publica adjuntos preparados por el administrador con el token efímero del CI.
 
 Solo habla con Forgejo por loopback. La carpeta y todos sus antecesores deben
-ser de root y no escribibles por el runner. La etiqueta ya debe existir en main.
+ser de root y no escribibles por el runner. La etiqueta debe pertenecer a main
+y mantener intactos los paquetes.
 La release permanece en borrador hasta verificar por descarga todos los hashes.
 """
 import argparse
@@ -140,31 +141,24 @@ class Forgejo:
             connection.close()
 
 
-def publish(folder, tag, commit, client, draft_only=False):
+def publish(folder, tag, commit, client, draft_only=False, main_commit=None):
     data = load_manifest(folder, tag, commit)
     branch = client.request('GET', API + '/branches/main')
     remote_tag = client.request('GET', API + '/tags/' + quote(tag, safe=''), missing=draft_only)
-    if (branch['commit']['id'] != commit or (remote_tag is None and not draft_only)
+    if (branch['commit']['id'] != (main_commit or commit) or (remote_tag is None and not draft_only)
             or (remote_tag is not None and remote_tag['commit']['sha'] != commit)):
-        raise ValueError('La etiqueta no identifica el main aprobado actual')
+        raise ValueError('La etiqueta o main no corresponden a los commits aprobados')
     release = client.request('GET', API + '/releases/tags/' + quote(tag, safe=''), missing=True)
     if release is None:
         release = client.request('POST', API + '/releases', {'tag_name': tag,
             'target_commitish': commit, 'name': 'Headscale Gateway ' + tag.removeprefix('v'),
             'body': data['body'], 'draft': True, 'prerelease': False})
     release_id = release['id']
-    existing = []
-    # El servidor puede limitar el tamaño de página por debajo del solicitado.
-    # Se termina con una página vacía, sin asumir su configuración global.
-    for page in range(1, 66):
-        chunk = client.request('GET', API + '/releases/' + str(release_id) + '/assets?limit=100&page=' + str(page))
-        if not chunk:
-            break
-        existing.extend(chunk)
-        if len(existing) > 64:
-            raise ValueError('Demasiados adjuntos remotos; no se modifica la entrega')
-    else:
-        raise ValueError('La paginación de adjuntos no termina')
+    # Forgejo 17 devuelve aquí la lista completa y no pagina este recurso.
+    # Repetir page=N vuelve a devolver los mismos adjuntos.
+    existing = client.request('GET', API + '/releases/' + str(release_id) + '/assets')
+    if not isinstance(existing, list) or len(existing) > 64:
+        raise ValueError('Lista de adjuntos remotos no válida o excesiva')
     names = {asset['name']: asset for asset in existing}
     if len(names) != len(existing) or set(names) - {a['name'] for a in data['assets']}:
         raise ValueError('La release contiene adjuntos ajenos o repetidos; no se eliminan')
@@ -189,17 +183,51 @@ def publish(folder, tag, commit, client, draft_only=False):
     print('RELEASE_PUBLICADA_Y_VERIFICADA: ' + tag, flush=True)
 
 
+# Un arreglo del publicador puede reintentar una etiqueta existente, sin moverla
+# ni aceptar cambios posteriores en el motor, sus fuentes o los instaladores.
+PUBLICATION_ONLY_PATHS = {
+    '.forgejo/workflows/quality.yml', 'tools/publish_forgejo_release.py',
+    'tests/test_forgejo_release.py', 'docs/MIGRACION_REPOSITORIO.md',
+    'CONTENIDO.sha256',
+}
+
+
+def resolve_release_commit(tag, head, draft_only=False, repository=None):
+    if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', tag):
+        raise ValueError('Etiqueta de versión no válida')
+    prefix = ['git'] + (['-C', str(repository)] if repository is not None else [])
+    def git(*args):
+        return subprocess.check_output(prefix + list(args), text=True, stderr=subprocess.DEVNULL).strip()
+    try:
+        commit = git('rev-parse', '--verify', 'refs/tags/' + tag + '^{commit}')
+    except subprocess.CalledProcessError:
+        if draft_only:
+            return head
+        raise ValueError('La etiqueta debe existir antes de publicar') from None
+    if commit != head:
+        try:
+            git('merge-base', '--is-ancestor', commit, head)
+        except subprocess.CalledProcessError:
+            raise ValueError('La etiqueta no pertenece al main aprobado') from None
+        changed = set(git('diff', '--name-only', commit, head).splitlines())
+        if changed - PUBLICATION_ONLY_PATHS:
+            raise ValueError('Hay cambios de producto posteriores a la etiqueta; no se reutilizan los paquetes')
+    return commit
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tag', required=True)
     parser.add_argument('--staging', required=True)
     parser.add_argument('--draft-only', action='store_true', help='Preparar y verificar sin crear la etiqueta ni publicar')
     args = parser.parse_args()
-    commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
     version = Path('VERSION').read_text().strip()
     if args.tag != 'v' + version:
         raise SystemExit('La etiqueta y VERSION no coinciden')
-    publish(args.staging, args.tag, commit, Forgejo(os.environ.pop('HGW_RELEASE_TOKEN', '')), args.draft_only)
+    commit = resolve_release_commit(args.tag, head, args.draft_only)
+    publish(args.staging, args.tag, commit, Forgejo(os.environ.pop('HGW_RELEASE_TOKEN', '')),
+            args.draft_only, main_commit=head)
 
 
 if __name__ == '__main__':
