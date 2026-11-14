@@ -195,14 +195,16 @@ sincronización automática con GitHub, Mis-app, el paquete YunoHost y el manual
 con lectura para el usuario del runner y sin escritura de grupo u otros.
 <code>release-assets.json</code> declara <code>tag</code>, <code>source_commit</code>, <code>body</code> (notas revisadas)
 y una lista <code>assets</code> de objetos con <code>name</code>, <code>bytes</code> y <code>sha256</code>. El commit debe
-coincidir exactamente con la etiqueta y el <code>main</code> actual. No se admiten enlaces,
+coincidir exactamente con la etiqueta, que debe pertenecer al <code>main</code> aprobado. No se admiten enlaces,
 archivos adicionales, nombres repetidos, rutas dentro de los nombres ni partes
 de más de 2.100.000.000 bytes. La carpeta y sus antecesores deben estar protegidos.</p>
 <p><code>tools/publish_forgejo_release.py</code> utiliza únicamente el token temporal del
 trabajo y la API local de Forgejo en <code>127.0.0.1:6000</code>. Mantiene la entrega en
 borrador hasta descargar cada adjunto y comprobar su tamaño y SHA-256. Un error
 detiene la publicación. Una repetición reutiliza solo adjuntos que se verifican;
-no elimina archivos ni sobrescribe una release publicada. No guarda tokens ni
+no elimina archivos ni sobrescribe una release publicada. La API de Forgejo 17
+devuelve todos los adjuntos en una consulta; este recurso no se pagina.
+No guarda tokens ni
 los envía a direcciones indicadas en las respuestas HTTP.</p>
 <p>Los escritorios incluyen los fuentes y avisos completos del runtime. Si el
 archivo supera el límite de adjuntos, divídelo con <code>tools/split_release.py</code> y
@@ -217,6 +219,14 @@ no publica la release ni crea la etiqueta Git. Solo después de confirmar
 <code>BORRADOR_VERIFICADO_SIN_PUBLICAR</code> se envía la etiqueta; el trabajo automático
 revalida los adjuntos y publica. Esta preparación manual no sustituye ni
 dispara los flujos automáticos de Mis-app y GitHub Pages.</p>
+<p>Si falla exclusivamente la infraestructura de publicación, corrige el publicador
+mediante una solicitud revisada y fusionada en Forgejo. Después ejecuta el flujo
+sobre <code>main</code> con la etiqueta original y «Publicar la etiqueta existente» activado.
+Repite seguridad, pruebas y descarga de todos los adjuntos. Conserva la etiqueta
+y los paquetes originales: solo permite cambios posteriores en el publicador,
+su flujo, sus pruebas, esta guía y <code>CONTENIDO.sha256</code>. Rechaza cambios en el
+producto o una etiqueta que no sea antecesora del <code>main</code> ejecutado. La casilla
+permanece desactivada por defecto para preparar borradores sin publicarlos.</p>
 <h2 id="exportar-una-carpeta-o-un-zip-limpio">Exportar una carpeta o un ZIP limpio</h2>
 <pre tabindex="0"><code class="language-bash">python3 tools/prepare_git_install.py --check
 python3 tools/repository_archive.py --output releases/headscale-gateway-fuentes.zip
