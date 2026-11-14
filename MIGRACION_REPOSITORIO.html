@@ -227,6 +227,15 @@ y los paquetes originales: solo permite cambios posteriores en el publicador,
 su flujo, sus pruebas, esta guía y <code>CONTENIDO.sha256</code>. Rechaza cambios en el
 producto o una etiqueta que no sea antecesora del <code>main</code> ejecutado. La casilla
 permanece desactivada por defecto para preparar borradores sin publicarlos.</p>
+<p>Forgejo puede convertir automáticamente un borrador en release al recibir la
+etiqueta Git, antes de que termine el flujo. Si faltan adjuntos, la publicación
+por etiqueta permite recuperar ese borrador únicamente después de verificar que
+todos los adjuntos existentes pertenecen al manifiesto protegido y sus SHA-256
+coinciden. Después sube los que faltan, verifica todas las descargas y publica.
+Para un reintento manual activa también «Recuperar como borrador una release
+incompleta». Sin esta opción, el publicador no añade archivos a una release
+publicada. Una release completa, con archivos ajenos o con sumas distintas no
+se devuelve a borrador. La recuperación no cambia ni recrea la etiqueta.</p>
 <h2 id="exportar-una-carpeta-o-un-zip-limpio">Exportar una carpeta o un ZIP limpio</h2>
 <pre tabindex="0"><code class="language-bash">python3 tools/prepare_git_install.py --check
 python3 tools/repository_archive.py --output releases/headscale-gateway-fuentes.zip
