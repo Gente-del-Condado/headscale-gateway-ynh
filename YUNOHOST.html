@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -151,10 +151,10 @@ funciona antes de configurar la VPN. Utiliza una cuenta del grupo <code>admins</
 las plantillas que edita el desarrollador y <code>yunohost/</code> es el paquete instalable.
 Las actualizaciones deben conservar la carpeta de datos de cada instancia.</p>
 <h2 id="instalar-desde-el-repositorio-público">Instalar desde el repositorio público</h2>
-<p>El <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh">repositorio del paquete</a>
+<p>El <a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh">repositorio del paquete</a>
 contiene el manifiesto en la raíz y los binarios para ambas arquitecturas.
 No necesitas acceso al repositorio privado del motor:</p>
-<pre tabindex="0"><code class="language-bash">sudo yunohost app install https://github.com/Gente-del-Condado/headscale-gateway_ynh
+<pre tabindex="0"><code class="language-bash">sudo yunohost app install https://github.com/Gente-del-Condado/headscale_gateway_ynh
 </code></pre>
 <p>Es una instalación desde una URL personalizada, no una incorporación al catálogo
 oficial de YunoHost. Consulta el estado de validación al final de este documento.</p>
@@ -212,7 +212,7 @@ Puedes configurar las credenciales de acceso directo en <strong>Acceso / Identid
 publicado sea accesible por VPN: comprueba ambos recorridos.</p>
 <h2 id="actualizar">Actualizar</h2>
 <p>Si instalaste desde el repositorio público:</p>
-<pre tabindex="0"><code class="language-bash">sudo yunohost app upgrade headscale_gateway --url https://github.com/Gente-del-Condado/headscale-gateway_ynh
+<pre tabindex="0"><code class="language-bash">sudo yunohost app upgrade headscale_gateway --url https://github.com/Gente-del-Condado/headscale_gateway_ynh
 </code></pre>
 <p>Si utilizas el clon privado de desarrollo:</p>
 <pre tabindex="0"><code class="language-bash">git -C &quot;$HOME/headscale-gateway-src&quot; pull --ff-only &amp;&amp;

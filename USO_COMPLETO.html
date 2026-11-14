@@ -13,7 +13,7 @@
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="site-header">
     <a class="brand" href="index.html"><span class="brand-symbol" aria-hidden="true">◇</span> Headscale Gateway</a>
-    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
+    <div class="header-links"><span>Manual · 1.4.7</span><a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh/tree/upstream-source">Repositorio ↗</a></div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -586,7 +586,7 @@ variables → Actions</strong> de GitHub. El flujo publica por SSH en el catálo
 Forgejo, cuya réplica actualiza después Mis-app en GitHub.</p>
 <h2 id="publicar-el-paquete-yunohost">Publicar el paquete YunoHost</h2>
 <p>El repositorio público de instalación es
-<a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh">headscale-gateway_ynh</a>.
+<a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh">headscale_gateway_ynh</a>.
 Consulta la <a href="YUNOHOST.html">guía de YunoHost</a> para instalarlo y
 actualizarlo mediante su URL. El paquete sigue siendo experimental hasta
 completar la aceptación en una máquina virtual real; publicarlo no lo incorpora
@@ -599,9 +599,9 @@ al catálogo oficial de YunoHost.</p>
 <li>El flujo <strong>Publicar el paquete YunoHost</strong> audita Go y npm con las mismas
    comprobaciones anteriores y valida <code>git-install-manifest.json</code>. Solo entonces
    obtiene la clave y publica por SSH en
-   <code>wolfbelmi88/headscale-gateway_ynh</code> de Forgejo.</li>
+   <code>wolfbelmi88/headscale_gateway_ynh</code> de Forgejo.</li>
 <li>El espejo de salida de ese repositorio actualiza el repositorio público
-   <code>Gente-del-Condado/headscale-gateway_ynh</code> de GitHub.</li>
+   <code>Gente-del-Condado/headscale_gateway_ynh</code> de GitHub.</li>
 </ol>
 <p>El flujo se activa al cambiar <code>yunohost/</code>, las dependencias auditadas o el propio
 publicador en <code>main</code>. Usa el último <code>main</code>, serializa las publicaciones y no
@@ -614,11 +614,11 @@ administrados. Rechaza enlaces y rutas ajenas al paquete. Conserva los archivos
 ajenos del destino, las licencias y los avisos; no copia el historial privado,
 <code>src/</code>, el complemento Home Assistant ni los datos de instalaciones.</p>
 <p>Para configurar las credenciales, registra una clave de despliegue dedicada
-con escritura solo en <strong>headscale-gateway_ynh de Forgejo</strong> y guarda su parte
+con escritura solo en <strong>headscale_gateway_ynh de Forgejo</strong> y guarda su parte
 privada como secreto <code>YNH_FORGEJO_DEPLOY_KEY</code> en <strong>headscale-gateway → Settings →
 Secrets and variables → Actions</strong> de GitHub. Configura en el repositorio de
 paquete de Forgejo un espejo SSH hacia
-<code>git@github.com:Gente-del-Condado/headscale-gateway_ynh.git</code>, sincronización al
+<code>git@github.com:Gente-del-Condado/headscale_gateway_ynh.git</code>, sincronización al
 recibir commits e intervalo de respaldo. Registra la clave pública de ese espejo
 como clave de despliegue con escritura exclusivamente en el paquete de GitHub.
 Son dos claves distintas; ninguna necesita escritura en el proyecto principal.</p>
@@ -702,13 +702,13 @@ de ejecución y las credenciales.</p>
 <h2 id="límites-y-licencia">Límites y licencia</h2>
 <p>No se implementa administración remota automática por confiar una CA, descubrimiento irrestricto de toda la zona DNS, instalación remota de CA en clientes, CRL/OCSP de certificados emitidos ni restauración automática de la configuración completa del VPS Headscale. Los límites de tamaño, puertos y caducidad del catálogo están en la guía de federación.</p>
 <p>Las pruebas del helper privilegiado y el recorrido con un segundo Gateway real siguen siendo comprobaciones separadas. Una compilación correcta para Windows/macOS no equivale a ejecutar allí esta revisión.</p>
-<p><strong>Código propio bajo AGPL-3.0-only</strong>, según <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/LICENSE">LICENSE</a> y <a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/NOTICE">NOTICE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. Los paquetes de escritorio incorporan los fuentes y avisos del runtime descritos en <a href="LICENCIAS.html">LICENCIAS.md</a>; conserva la carpeta <code>legal/</code> al redistribuirlos.</p>
+<p><strong>Código propio bajo AGPL-3.0-only</strong>, según <a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh/blob/upstream-source/LICENSE">LICENSE</a> y <a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh/blob/upstream-source/NOTICE">NOTICE</a>. Las dependencias conservan sus licencias y derechos. El módulo de activación por suscripción está desactivado en las compilaciones normales; se habilita antes de compilar con una clave pública del emisor. Consulta <a href="SUSCRIPCIONES.html">SUSCRIPCIONES.md</a>. Los paquetes de escritorio incorporan los fuentes y avisos del runtime descritos en <a href="LICENCIAS.html">LICENCIAS.md</a>; conserva la carpeta <code>legal/</code> al redistribuirlos.</p>
 <p>Documentación complementaria: <a href="ARQUITECTURA.html">arquitectura</a>, <a href="PRUEBAS.html">pruebas</a>, <a href="CA-FEDERACION.html">CA y federación</a>, <a href="PORTAL_Y_FEDERACION.html">portal</a>, <a href="HELPER_CA.html">helper</a> e <a href="IDIOMAS_Y_REGISTROS.html">idiomas</a>.</p>
 <h2 id="estructura-y-entregas">Estructura y entregas</h2>
 <p>El mapa vigente está en <a href="ESTRUCTURA.html">ESTRUCTURA.md</a>. El motor, el panel y
 el cliente de escritorio están en <code>src/</code>; Android en <code>android/src/</code>.
 Los comandos de desarrollo y compilación se explican en el
-<a href="https://github.com/Gente-del-Condado/headscale-gateway_ynh/blob/upstream-source/README.md">README del repositorio</a>.
+<a href="https://github.com/Gente-del-Condado/headscale_gateway_ynh/blob/upstream-source/README.md">README del repositorio</a>.
 Las entregas se generan en carpetas nuevas de <code>releases/</code>. Los paquetes listos
 para instalación privada se conservan en <code>addons/</code> y <code>yunohost/</code>.
 No se incluyen bases de datos, credenciales, perfiles ni cachés.</p></article>
