@@ -198,14 +198,26 @@ y una lista <code>assets</code> de objetos con <code>name</code>, <code>bytes</c
 coincidir exactamente con la etiqueta, que debe pertenecer al <code>main</code> aprobado. No se admiten enlaces,
 archivos adicionales, nombres repetidos, rutas dentro de los nombres ni partes
 de más de 2.100.000.000 bytes. La carpeta y sus antecesores deben estar protegidos.</p>
-<p><code>tools/publish_forgejo_release.py</code> utiliza únicamente el token temporal del
-trabajo y la API local de Forgejo en <code>127.0.0.1:6000</code>. Mantiene la entrega en
-borrador hasta descargar cada adjunto y comprobar su tamaño y SHA-256. Un error
+<p><code>tools/publish_forgejo_release.py</code> utiliza el token temporal del trabajo para
+las operaciones de la API local de Forgejo en <code>127.0.0.1:6000</code>. Para descargar
+adjuntos privados, Forgejo 17 requiere un token de usuario normal: su usuario
+especial de Actions no obtiene esos permisos en la ruta web de adjuntos.</p>
+<p>Crea un token con <strong>solo <code>read:repository</code></strong> y selecciona exclusivamente
+<code>wolfbelmi88/headscale-gateway</code> en los recursos autorizados. Guárdalo como
+secreto <strong><code>HGW_RELEASE_READ_TOKEN</code></strong> en Actions de este repositorio Forgejo,
+sin pegarlo en el chat, los fuentes o los registros. No necesita permisos de
+escritura ni acceso a otros repositorios. El token de lectura solo se envía a
+la descarga por UUID validado en loopback; nunca a las URLs externas de los
+metadatos. Las subidas y la publicación siguen usando el token efímero del
+trabajo. Si falta el secreto de lectura, la publicación se detiene sin usar
+como sustituto el token de escritura.</p>
+<p>La herramienta mantiene la entrega en borrador hasta descargar cada adjunto y
+comprobar su tamaño y SHA-256. Un error
 detiene la publicación. Una repetición reutiliza solo adjuntos que se verifican;
 no elimina archivos ni sobrescribe una release publicada. La API de Forgejo 17
 devuelve todos los adjuntos en una consulta; este recurso no se pagina.
-No guarda tokens ni
-los envía a direcciones indicadas en las respuestas HTTP.</p>
+No escribe tokens en disco ni los envía a direcciones indicadas en las
+respuestas HTTP.</p>
 <p>Los escritorios incluyen los fuentes y avisos completos del runtime. Si el
 archivo supera el límite de adjuntos, divídelo con <code>tools/split_release.py</code> y
 distribuye todas sus partes, sus sumas y las instrucciones de reconstrucción.
