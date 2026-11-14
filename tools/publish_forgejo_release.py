@@ -141,7 +141,7 @@ class Forgejo:
             connection.close()
 
 
-def publish(folder, tag, commit, client, draft_only=False, main_commit=None):
+def publish(folder, tag, commit, client, draft_only=False, main_commit=None, recover_incomplete=False):
     data = load_manifest(folder, tag, commit)
     branch = client.request('GET', API + '/branches/main')
     remote_tag = client.request('GET', API + '/tags/' + quote(tag, safe=''), missing=draft_only)
@@ -162,7 +162,26 @@ def publish(folder, tag, commit, client, draft_only=False, main_commit=None):
     names = {asset['name']: asset for asset in existing}
     if len(names) != len(existing) or set(names) - {a['name'] for a in data['assets']}:
         raise ValueError('La release contiene adjuntos ajenos o repetidos; no se eliminan')
+    verified = set()
+    missing_names = {asset['name'] for asset in data['assets']} - set(names)
+    if not release['draft'] and missing_names and recover_incomplete:
+        # Forgejo convierte automáticamente un borrador en release al recibir
+        # su etiqueta. Solo se recupera por petición explícita, después de
+        # comprobar todos los adjuntos existentes contra el manifiesto protegido.
+        # Una release completa o con archivos ajenos nunca cambia de estado aquí.
+        for asset in data['assets']:
+            if asset['name'] in names:
+                client.verify(names[asset['name']], asset)
+                verified.add(asset['name'])
+                print('SHA256_REMOTO_OK: ' + asset['name'], flush=True)
+        client.request('PATCH', API + '/releases/' + str(release_id), {'draft': True})
+        release = client.request('GET', API + '/releases/' + str(release_id))
+        if not release['draft'] or release['tag_name'] != tag:
+            raise ValueError('No se ha confirmado la recuperación del borrador')
+        print('BORRADOR_RECUPERADO: ' + tag, flush=True)
     for asset in data['assets']:
+        if asset['name'] in verified:
+            continue
         remote = names.get(asset['name'])
         if remote is None:
             if not release['draft']:
@@ -220,14 +239,18 @@ def main():
     parser.add_argument('--tag', required=True)
     parser.add_argument('--staging', required=True)
     parser.add_argument('--draft-only', action='store_true', help='Preparar y verificar sin crear la etiqueta ni publicar')
+    parser.add_argument('--recover-incomplete', action='store_true',
+                        help='Recuperar como borrador una release incompleta tras verificar sus adjuntos existentes')
     args = parser.parse_args()
+    if args.draft_only and args.recover_incomplete:
+        parser.error('Recuperar una release incompleta requiere publicar, no solo preparar un borrador')
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
     version = Path('VERSION').read_text().strip()
     if args.tag != 'v' + version:
         raise SystemExit('La etiqueta y VERSION no coinciden')
     commit = resolve_release_commit(args.tag, head, args.draft_only)
     publish(args.staging, args.tag, commit, Forgejo(os.environ.pop('HGW_RELEASE_TOKEN', '')),
-            args.draft_only, main_commit=head)
+            args.draft_only, main_commit=head, recover_incomplete=args.recover_incomplete)
 
 
 if __name__ == '__main__':

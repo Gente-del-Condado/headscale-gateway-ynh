@@ -115,6 +115,16 @@ su flujo, sus pruebas, esta guía y `CONTENIDO.sha256`. Rechaza cambios en el
 producto o una etiqueta que no sea antecesora del `main` ejecutado. La casilla
 permanece desactivada por defecto para preparar borradores sin publicarlos.
 
+Forgejo puede convertir automáticamente un borrador en release al recibir la
+etiqueta Git, antes de que termine el flujo. Si faltan adjuntos, la publicación
+por etiqueta permite recuperar ese borrador únicamente después de verificar que
+todos los adjuntos existentes pertenecen al manifiesto protegido y sus SHA-256
+coinciden. Después sube los que faltan, verifica todas las descargas y publica.
+Para un reintento manual activa también «Recuperar como borrador una release
+incompleta». Sin esta opción, el publicador no añade archivos a una release
+publicada. Una release completa, con archivos ajenos o con sumas distintas no
+se devuelve a borrador. La recuperación no cambia ni recrea la etiqueta.
+
 ## Exportar una carpeta o un ZIP limpio
 
 ```bash

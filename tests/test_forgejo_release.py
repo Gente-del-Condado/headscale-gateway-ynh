@@ -141,6 +141,36 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn(('verify', 'artifact.zip'), events)
         self.assertFalse(any('?page=' in path or '?limit=' in path for _, path in events))
 
+    def test_incomplete_release_recovery_verifies_existing_before_changing_state(self):
+        assets = [{'name': name, 'bytes': 7, 'sha256': 'a'*64}
+                  for name in ('existing.zip', 'missing.zip')]
+        events = []
+        class Client:
+            def __init__(self): self.draft = False
+            def request(self, method, path, data=None, missing=False):
+                if path.endswith('/branches/main'): return {'commit': {'id': 'a'*40}}
+                if path == module.API+'/tags/v1.4.7': return {'commit': {'sha': 'a'*40}}
+                if path.endswith('/assets'): return [{'name': 'existing.zip'}]
+                if method == 'PATCH':
+                    self.draft = data['draft']; events.append(('draft', self.draft)); return
+                return {'id': 4, 'draft': self.draft, 'tag_name': 'v1.4.7'}
+            def upload(self, release_id, file):
+                events.append(('upload', file.name)); return {'name': file.name}
+            def verify(self, remote, expected): events.append(('verify', expected['name']))
+        with patch.object(module, 'load_manifest', return_value={'assets': assets, 'body': 'Notas'}):
+            with self.assertRaises(ValueError):
+                module.publish('/fixture', 'v1.4.7', 'a'*40, Client())
+            self.assertEqual(events, [('verify', 'existing.zip')])
+            events.clear()
+            module.publish('/fixture', 'v1.4.7', 'a'*40, Client(), recover_incomplete=True)
+            self.assertEqual(events, [('verify', 'existing.zip'), ('draft', True),
+                ('upload', 'missing.zip'), ('verify', 'missing.zip'), ('draft', False)])
+            events.clear()
+            with patch.object(Client, 'verify', side_effect=ValueError('Suma distinta')):
+                with self.assertRaises(ValueError):
+                    module.publish('/fixture', 'v1.4.7', 'a'*40, Client(), recover_incomplete=True)
+            self.assertEqual(events, [])
+
     def test_retry_preserves_tag_and_rejects_product_changes(self):
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)
