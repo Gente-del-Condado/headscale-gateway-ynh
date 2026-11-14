@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Publica adjuntos preparados por el administrador con el token efímero del CI.
 
-Solo habla con Forgejo por loopback. La carpeta y todos sus antecesores deben
+Solo habla con Forgejo por loopback. Separa el token temporal de escritura
+del token de lectura limitado al repositorio para las descargas privadas.
+La carpeta y todos sus antecesores deben
 ser de root y no escribibles por el runner. La etiqueta debe pertenecer a main
 y mantener intactos los paquetes.
 La release permanece en borrador hasta verificar por descarga todos los hashes.
@@ -67,10 +69,13 @@ def load_manifest(folder, tag, commit, owner=0):
 
 
 class Forgejo:
-    def __init__(self, token):
+    def __init__(self, token, read_token):
         if not token:
             raise ValueError('Falta el token temporal del trabajo')
+        if not read_token:
+            raise ValueError('Falta HGW_RELEASE_READ_TOKEN, de solo lectura y limitado al repositorio')
         self.token = token
+        self.read_token = read_token
 
     def request(self, method, path, data=None, missing=False):
         connection = http.client.HTTPConnection('127.0.0.1', 6000, timeout=300)
@@ -125,7 +130,7 @@ class Forgejo:
         path = '/attachments/' + uuid
         connection = http.client.HTTPConnection('127.0.0.1', 6000, timeout=300)
         try:
-            connection.request('GET', path, headers={'Authorization': 'Bearer ' + self.token})
+            connection.request('GET', path, headers={'Authorization': 'Bearer ' + self.read_token})
             response = connection.getresponse()
             if response.status != 200:
                 raise RuntimeError('No se puede comprobar la descarga: HTTP ' + str(response.status))
@@ -249,7 +254,8 @@ def main():
     if args.tag != 'v' + version:
         raise SystemExit('La etiqueta y VERSION no coinciden')
     commit = resolve_release_commit(args.tag, head, args.draft_only)
-    publish(args.staging, args.tag, commit, Forgejo(os.environ.pop('HGW_RELEASE_TOKEN', '')),
+    publish(args.staging, args.tag, commit, Forgejo(os.environ.pop('HGW_RELEASE_TOKEN', ''),
+            os.environ.pop('HGW_RELEASE_READ_TOKEN', '')),
             args.draft_only, main_commit=head, recover_incomplete=args.recover_incomplete)
 
 

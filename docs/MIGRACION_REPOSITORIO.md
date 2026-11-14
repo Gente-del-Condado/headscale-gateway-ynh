@@ -82,14 +82,28 @@ coincidir exactamente con la etiqueta, que debe pertenecer al `main` aprobado. N
 archivos adicionales, nombres repetidos, rutas dentro de los nombres ni partes
 de más de 2.100.000.000 bytes. La carpeta y sus antecesores deben estar protegidos.
 
-`tools/publish_forgejo_release.py` utiliza únicamente el token temporal del
-trabajo y la API local de Forgejo en `127.0.0.1:6000`. Mantiene la entrega en
-borrador hasta descargar cada adjunto y comprobar su tamaño y SHA-256. Un error
+`tools/publish_forgejo_release.py` utiliza el token temporal del trabajo para
+las operaciones de la API local de Forgejo en `127.0.0.1:6000`. Para descargar
+adjuntos privados, Forgejo 17 requiere un token de usuario normal: su usuario
+especial de Actions no obtiene esos permisos en la ruta web de adjuntos.
+
+Crea un token con **solo `read:repository`** y selecciona exclusivamente
+`wolfbelmi88/headscale-gateway` en los recursos autorizados. Guárdalo como
+secreto **`HGW_RELEASE_READ_TOKEN`** en Actions de este repositorio Forgejo,
+sin pegarlo en el chat, los fuentes o los registros. No necesita permisos de
+escritura ni acceso a otros repositorios. El token de lectura solo se envía a
+la descarga por UUID validado en loopback; nunca a las URLs externas de los
+metadatos. Las subidas y la publicación siguen usando el token efímero del
+trabajo. Si falta el secreto de lectura, la publicación se detiene sin usar
+como sustituto el token de escritura.
+
+La herramienta mantiene la entrega en borrador hasta descargar cada adjunto y
+comprobar su tamaño y SHA-256. Un error
 detiene la publicación. Una repetición reutiliza solo adjuntos que se verifican;
 no elimina archivos ni sobrescribe una release publicada. La API de Forgejo 17
 devuelve todos los adjuntos en una consulta; este recurso no se pagina.
-No guarda tokens ni
-los envía a direcciones indicadas en las respuestas HTTP.
+No escribe tokens en disco ni los envía a direcciones indicadas en las
+respuestas HTTP.
 
 Los escritorios incluyen los fuentes y avisos completos del runtime. Si el
 archivo supera el límite de adjuntos, divídelo con `tools/split_release.py` y

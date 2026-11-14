@@ -49,7 +49,7 @@ class ReleaseTest(unittest.TestCase):
                 expected = {'name': file.name, 'bytes': len(payload),
                             'sha256': hashlib.sha256(payload).hexdigest()}
                 with patch.object(module.http.client, 'HTTPConnection', side_effect=connect):
-                    client = module.Forgejo('fixture-token')
+                    client = module.Forgejo('fixture-token', 'fixture-reader')
                     remote = client.upload(4, file)
                     client.verify(remote, expected)
                     with self.assertRaises(ValueError):
@@ -58,9 +58,16 @@ class ReleaseTest(unittest.TestCase):
                 self.assertIn(payload, observed[0][2])
                 self.assertTrue(observed[0][2].endswith(b'--\r\n'))
                 self.assertEqual(observed[1][0], '/attachments/00112233-4455-6677-8899-aabbccddeeff')
-                self.assertTrue(all(item[1] == 'Bearer fixture-token' for item in observed))
+                self.assertEqual(observed[0][1], 'Bearer fixture-token')
+                self.assertTrue(all(item[1] == 'Bearer fixture-reader' for item in observed[1:]))
         finally:
             server.shutdown(); server.server_close(); thread.join()
+
+    def test_reader_credential_is_required_without_falling_back_to_writer(self):
+        with patch.object(module.http.client, 'HTTPConnection') as connect:
+            with self.assertRaisesRegex(ValueError, 'HGW_RELEASE_READ_TOKEN'):
+                module.Forgejo('fixture-writer', '')
+            connect.assert_not_called()
 
     def test_manifest_rejects_links_tampering_and_extra_files(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -208,14 +215,14 @@ class ReleaseTest(unittest.TestCase):
             response = connect.return_value.getresponse.return_value
             response.status = 200
             response.read.side_effect = [b'fixture', b'']
-            module.Forgejo('fixture-token').verify(remote, expected)
+            module.Forgejo('fixture-token', 'fixture-reader').verify(remote, expected)
             connect.assert_called_once_with('127.0.0.1', 6000, timeout=300)
             connect.return_value.request.assert_called_once_with('GET',
                 '/attachments/00112233-4455-6677-8899-aabbccddeeff',
-                headers={'Authorization': 'Bearer fixture-token'})
+                headers={'Authorization': 'Bearer fixture-reader'})
         with patch.object(module.http.client, 'HTTPConnection') as connect:
             with self.assertRaises(ValueError):
-                module.Forgejo('fixture-token').verify(dict(remote, uuid='../../collect'), expected)
+                module.Forgejo('fixture-token', 'fixture-reader').verify(dict(remote, uuid='../../collect'), expected)
             connect.assert_not_called()
 
 
